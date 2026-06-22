@@ -9,7 +9,7 @@ import {
 import { db } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 
-import { uploadResumeToS3 } from "../../services/s3Upload";
+import { uploadResume } from "../../services/uploadResume";
 
 export default function ResumeCard() {
   const { user } = useAuth();
@@ -75,62 +75,79 @@ export default function ResumeCard() {
     fetchResume();
   }, [user]);
 
-  const handleResumeUpload =
-    async (event) => {
-      try {
-        const file =
-          event.target.files?.[0];
+  const handleResumeUpload = async (
+  event
+) => {
+  try {
+    const file =
+      event.target.files?.[0];
 
-        if (!file) return;
+    if (!file) return;
 
-        if (
-          file.type !==
-          "application/pdf"
-        ) {
-          alert(
-            "Please upload a PDF resume."
-          );
-          return;
-        }
+    if (
+      file.type !==
+      "application/pdf"
+    ) {
+      alert(
+        "Please upload a PDF resume."
+      );
+      return;
+    }
 
-        setUploading(true);
+    if (
+      file.size >
+      10 * 1024 * 1024
+    ) {
+      alert(
+        "Resume must be under 10MB."
+      );
+      return;
+    }
 
-        const resumeUrl =
-          await uploadResumeToS3(file);
+    setUploading(true);
 
-        await updateDoc(
-          doc(
-            db,
-            "users",
-            user.uid
-          ),
-          {
-            resumeUploaded: true,
-            resumeUrl,
-            uploadedAt:
-              new Date(),
-          }
-        );
+    const resumeUrl =
+      await uploadResume(file);
 
-        setResume((prev) => ({
-          ...prev,
-          uploaded: true,
-          resumeUrl,
-        }));
+    await updateDoc(
+      doc(
+        db,
+        "users",
+        user.uid
+      ),
+      {
+        resumeUploaded: true,
+        resumeUrl,
+        uploadedAt:
+          new Date(),
 
-        alert(
-          "Resume uploaded successfully!"
-        );
-      } catch (error) {
-        console.error(error);
-
-        alert(
-          "Resume upload failed."
-        );
-      } finally {
-        setUploading(false);
+        resumeScore: 0,
+        atsScore: 0,
+        strengths: [],
+        improvements: [],
       }
-    };
+    );
+
+    setResume((prev) => ({
+      ...prev,
+      uploaded: true,
+      resumeUrl,
+    }));
+
+    alert(
+      "Resume uploaded successfully!"
+    );
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.message ||
+        "Resume upload failed."
+    );
+  } finally {
+    setUploading(false);
+  }
+};
 
   if (loading) {
     return (
@@ -404,23 +421,52 @@ export default function ResumeCard() {
             </div>
 
             {resume.resumeUrl && (
-              <a
-                href={
-                  resume.resumeUrl
-                }
-                target="_blank"
-                rel="noreferrer"
-                className="
-                  mt-6
-                  inline-block
-                  text-sm
-                  text-cyan-400
-                  hover:text-cyan-300
-                "
-              >
-                View Uploaded Resume →
-              </a>
-            )}
+                <div className="mt-6 flex gap-3">
+                    <a
+                    href={resume.resumeUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="
+                        rounded-xl
+                        bg-cyan-500
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-black
+                        transition
+                        hover:scale-105
+                    "
+                    >
+                    View Resume
+                    </a>
+
+                    <label
+                    className="
+                        cursor-pointer
+                        rounded-xl
+                        border
+                        border-white/10
+                        px-4
+                        py-2
+                        text-sm
+                        transition
+                        hover:bg-white/5
+                    "
+                    >
+                    Re-upload
+
+                    <input
+                        hidden
+                        type="file"
+                        accept=".pdf"
+                        onChange={
+                        handleResumeUpload
+                        }
+                    />
+                    </label>
+                </div>
+                )}
           </>
         )}
       </div>
