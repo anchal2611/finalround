@@ -3,9 +3,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
-
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    accessKeyId:
+      process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey:
       process.env.AWS_SECRET_ACCESS_KEY,
   },
@@ -16,19 +16,6 @@ export default async function handler(
   res
 ) {
   try {
-    console.log("=== S3 CONFIG ===");
-
-    console.log({
-      region: process.env.AWS_REGION,
-      bucket:
-        process.env.S3_BUCKET_NAME,
-      hasAccessKey:
-        !!process.env.AWS_ACCESS_KEY_ID,
-      hasSecretKey:
-        !!process.env
-          .AWS_SECRET_ACCESS_KEY,
-    });
-
     const {
       fileName,
       fileType,
@@ -36,15 +23,9 @@ export default async function handler(
 
     if (!fileName) {
       return res.status(400).json({
+        success: false,
         error:
           "fileName parameter missing",
-      });
-    }
-
-    if (!fileType) {
-      return res.status(400).json({
-        error:
-          "fileType parameter missing",
       });
     }
 
@@ -55,7 +36,6 @@ export default async function handler(
         Bucket:
           process.env.S3_BUCKET_NAME,
         Key: key,
-        ContentType: fileType,
       });
 
     const signedUrl =
@@ -63,7 +43,7 @@ export default async function handler(
         s3,
         command,
         {
-          expiresIn: 60,
+          expiresIn: 300,
         }
       );
 
@@ -71,27 +51,19 @@ export default async function handler(
       success: true,
       url: signedUrl,
       key,
+      fileType,
     });
   } catch (error) {
     console.error(
-      "UPLOAD URL ERROR:"
+      "UPLOAD URL ERROR:",
+      error
     );
-
-    console.error(error);
 
     return res.status(500).json({
       success: false,
-      message:
+      error:
         error.message ||
-        "Unknown error",
-
-      name: error.name,
-
-      stack:
-        process.env.NODE_ENV ===
-        "development"
-          ? error.stack
-          : undefined,
+        "Failed to generate upload URL",
     });
   }
 }
