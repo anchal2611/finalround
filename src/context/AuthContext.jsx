@@ -6,17 +6,17 @@ import {
 } from "react";
 
 import {
-  createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   signInWithPopup,
-  onAuthStateChanged,
 } from "firebase/auth";
 
 import {
   doc,
+  getDoc,
   setDoc,
-  serverTimestamp,
 } from "firebase/firestore";
 
 import {
@@ -31,17 +31,85 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export function AuthProvider({
+  children,
+}) {
+  const [user, setUser] =
+    useState(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  // EMAIL SIGNUP
-  const signup = async (
+  async function createUserDocument(
+    firebaseUser,
+    extraData = {}
+  ) {
+    try {
+      const userRef = doc(
+        db,
+        "users",
+        firebaseUser.uid
+      );
+
+      const userSnap =
+        await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: firebaseUser.uid,
+
+          email:
+            firebaseUser.email || "",
+
+          displayName:
+            firebaseUser.displayName ||
+            extraData.name ||
+            "",
+
+          createdAt:
+            new Date().toISOString(),
+
+          // Resume
+
+          resumeUploaded: false,
+          resumeUrl: "",
+
+          resumeScore: 0,
+          atsScore: 0,
+
+          strengths: [],
+          improvements: [],
+
+          // Dashboard Stats
+
+          interviewsCompleted: 0,
+          totalSessions: 0,
+          averageScore: 0,
+
+          // User Info
+
+          roleType:
+            extraData.roleType ||
+            "Student",
+
+          targetRole:
+            extraData.targetRole ||
+            "Software Engineer",
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Create user doc error:",
+        error
+      );
+    }
+  }
+
+  async function signup(
     email,
     password,
-    additionalData = {}
-  ) => {
+    userData = {}
+  ) {
     const result =
       await createUserWithEmailAndPassword(
         auth,
@@ -49,73 +117,55 @@ export function AuthProvider({ children }) {
         password
       );
 
-    await setDoc(
-      doc(db, "users", result.user.uid),
-      {
-        uid: result.user.uid,
-        email: result.user.email,
-        createdAt: serverTimestamp(),
-        ...additionalData,
-      }
+    await createUserDocument(
+      result.user,
+      userData
     );
 
-    return result.user;
-  };
+    return result;
+  }
 
-  // EMAIL LOGIN
-  const login = async (
+  async function login(
     email,
     password
-  ) => {
-    const result =
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+  ) {
+    return signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+  }
 
-    return result.user;
-  };
-
-  // GOOGLE LOGIN / SIGNUP
-  const googleLogin = async () => {
+  async function googleLogin() {
     const result =
       await signInWithPopup(
         auth,
         googleProvider
       );
 
-    await setDoc(
-      doc(db, "users", result.user.uid),
-      {
-        uid: result.user.uid,
-        email: result.user.email,
-        name:
-          result.user.displayName || "",
-        photo:
-          result.user.photoURL || "",
-        createdAt: serverTimestamp(),
-      },
-      {
-        merge: true,
-      }
+    await createUserDocument(
+      result.user
     );
 
-    return result.user;
-  };
+    return result;
+  }
 
-  // LOGOUT
-  const logout = async () => {
-    await signOut(auth);
-  };
+  async function logout() {
+    return signOut(auth);
+  }
 
-  // LISTENER
   useEffect(() => {
     const unsubscribe =
       onAuthStateChanged(
         auth,
-        (currentUser) => {
-          setUser(currentUser);
+        async (firebaseUser) => {
+          if (firebaseUser) {
+            await createUserDocument(
+              firebaseUser
+            );
+          }
+
+          setUser(firebaseUser);
           setLoading(false);
         }
       );
@@ -125,6 +175,8 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    loading,
+
     signup,
     login,
     logout,
@@ -132,8 +184,11 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider
+      value={value}
+    >
+      {!loading &&
+        children}
     </AuthContext.Provider>
   );
 }

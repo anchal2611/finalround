@@ -6,32 +6,92 @@ const s3 = new S3Client({
 
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    secretAccessKey:
+      process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-export default async function handler(req, res) {
+export default async function handler(
+  req,
+  res
+) {
   try {
-    const { fileName, fileType } = req.query;
+    console.log("=== S3 CONFIG ===");
 
-    const command = new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: `resumes/${Date.now()}-${fileName}`,
-      ContentType: fileType,
+    console.log({
+      region: process.env.AWS_REGION,
+      bucket:
+        process.env.S3_BUCKET_NAME,
+      hasAccessKey:
+        !!process.env.AWS_ACCESS_KEY_ID,
+      hasSecretKey:
+        !!process.env
+          .AWS_SECRET_ACCESS_KEY,
     });
 
-    const url = await getSignedUrl(
-      s3,
-      command,
-      { expiresIn: 60 }
+    const {
+      fileName,
+      fileType,
+    } = req.query;
+
+    if (!fileName) {
+      return res.status(400).json({
+        error:
+          "fileName parameter missing",
+      });
+    }
+
+    if (!fileType) {
+      return res.status(400).json({
+        error:
+          "fileType parameter missing",
+      });
+    }
+
+    const key = `resumes/${Date.now()}-${fileName}`;
+
+    const command =
+      new PutObjectCommand({
+        Bucket:
+          process.env.S3_BUCKET_NAME,
+        Key: key,
+        ContentType: fileType,
+      });
+
+    const signedUrl =
+      await getSignedUrl(
+        s3,
+        command,
+        {
+          expiresIn: 60,
+        }
+      );
+
+    return res.status(200).json({
+      success: true,
+      url: signedUrl,
+      key,
+    });
+  } catch (error) {
+    console.error(
+      "UPLOAD URL ERROR:"
     );
 
-    res.status(200).json({ url });
-  } catch (error) {
     console.error(error);
 
-    res.status(500).json({
-      error: "Failed to generate upload URL",
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message ||
+        "Unknown error",
+
+      name: error.name,
+
+      stack:
+        process.env.NODE_ENV ===
+        "development"
+          ? error.stack
+          : undefined,
     });
   }
 }
