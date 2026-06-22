@@ -7,9 +7,15 @@ export async function uploadResumeToS3(file) {
     )}`
   );
 
-  const { url } = await response.json();
+  const data = await response.json();
 
-  await fetch(url, {
+  if (!data.success) {
+    throw new Error(
+      data.error || "Failed to get upload URL"
+    );
+  }
+
+  await fetch(data.url, {
     method: "PUT",
     headers: {
       "Content-Type": file.type,
@@ -17,5 +23,5 @@ export async function uploadResumeToS3(file) {
     body: file,
   });
 
-  return url.split("?")[0];
+  return data.url.split("?")[0];
 }
