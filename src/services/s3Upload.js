@@ -15,13 +15,19 @@ export async function uploadResumeToS3(file) {
     );
   }
 
-  await fetch(data.url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type,
-    },
-    body: file,
-  });
+  const uploadResponse = await fetch(
+    data.url,
+    {
+      method: "PUT",
+      body: file,
+    }
+  );
+
+  if (!uploadResponse.ok) {
+    throw new Error(
+      `S3 Upload Failed: ${uploadResponse.status}`
+    );
+  }
 
   return data.url.split("?")[0];
 }
