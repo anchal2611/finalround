@@ -1,9 +1,9 @@
-export async function uploadResumeToS3(file) {
+export async function uploadResumeToS3(
+  file
+) {
   const response = await fetch(
     `/api/upload-url?fileName=${encodeURIComponent(
       file.name
-    )}&fileType=${encodeURIComponent(
-      file.type
     )}`
   );
 
@@ -22,15 +22,16 @@ export async function uploadResumeToS3(file) {
       body: file,
     });
 
+  const text =
+    await uploadResponse.text();
+
+  console.log(
+    "S3 Response:",
+    uploadResponse.status,
+    text
+  );
+
   if (!uploadResponse.ok) {
-    const text =
-      await uploadResponse.text();
-
-    console.error(
-      "S3 Error:",
-      text
-    );
-
     throw new Error(
       `S3 Upload Failed: ${uploadResponse.status}`
     );
