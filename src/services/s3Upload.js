@@ -9,23 +9,29 @@ export async function uploadResumeToS3(file) {
 
   const data = await response.json();
 
+  console.log("Signed URL:", data);
+
   if (!data.success) {
     throw new Error(
-      data.error || "Failed to get upload URL"
+      data.error ||
+        "Failed to generate upload URL"
     );
   }
 
-  const uploadResponse = await fetch(
-    data.url,
-    {
+  const uploadResponse =
+    await fetch(data.url, {
       method: "PUT",
       body: file,
-    }
+    });
+
+  console.log(
+    "Upload Response:",
+    uploadResponse
   );
 
   if (!uploadResponse.ok) {
     throw new Error(
-      `S3 Upload Failed: ${uploadResponse.status}`
+      `Upload failed: ${uploadResponse.status}`
     );
   }
 
