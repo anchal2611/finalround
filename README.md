@@ -1,16 +1,137 @@
-# React + Vite
+# 🎯 FinalRound
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+  <img src="YOUR_BANNER_URL" alt="FinalRound Banner" width="100%">
+</p>
 
-Currently, two official plugins are available:
+<h3 align="center">
+AI-Powered Interview Preparation Platform
+</h3>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+<p align="center">
+Upload your resume • Practice interviews • Get AI feedback • Track improvement
+</p>
 
-## React Compiler
+<p align="center">
+  <a href="LIVE_LINK">
+    <img src="https://img.shields.io/badge/Live-Demo-ff0055?style=for-the-badge">
+  </a>
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+  <a href="REPO_LINK">
+    <img src="https://img.shields.io/github/stars/anchal2611/finalround?style=for-the-badge">
+  </a>
 
-## Expanding the ESLint configuration
+  <img src="https://img.shields.io/badge/Built%20With-Gemini-blue?style=for-the-badge">
+</p>
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🚀 Overview
+
+FinalRound is an AI-powered interview preparation platform that helps students and professionals prepare smarter.
+
+Users can upload their resume, generate role-specific interviews, receive AI-powered feedback, track performance over time, and improve interview readiness through personalized insights.
+
+---
+
+## ✨ Features
+
+### 📄 Resume Intelligence
+
+* Resume upload and storage
+* AI resume analysis
+* ATS compatibility scoring
+* Personalized improvement suggestions
+
+### 🎤 Mock Interviews
+
+* Technical interviews
+* HR interviews
+* Role-specific question generation
+* Real-time AI interaction
+
+### 📊 Performance Analytics
+
+* Interview history
+* Progress tracking
+* Skill gap identification
+* Improvement trends
+
+### 🤖 AI Insights
+
+* Gemini-powered feedback
+* Detailed performance breakdown
+* Strengths and weaknesses analysis
+* Career-focused recommendations
+
+---
+
+## 🧠 System Architecture
+
+```text
+User
+ ↓
+React Frontend
+ ↓
+Firebase Auth
+ ↓
+Gemini AI Engine
+ ↓
+Interview Evaluation
+ ↓
+Firestore Database
+ ↓
+Analytics Dashboard
+```
+
+---
+
+## ⚙️ Tech Stack
+
+| Category       | Technologies                |
+| -------------- | --------------------------- |
+| Frontend       | React, Vite, TailwindCSS    |
+| Backend        | Vercel Serverless Functions |
+| Authentication | Firebase Auth               |
+| Database       | Firestore                   |
+| AI             | Gemini API                  |
+| Storage        | AWS S3                      |
+| Deployment     | Vercel                      |
+
+---
+
+## 📸 Screenshots
+
+| Dashboard       | Interview       |
+| --------------- | --------------- |
+| Screenshot Here | Screenshot Here |
+
+---
+
+## 🛣️ Roadmap
+
+* [x] Authentication
+* [x] Dashboard
+* [x] Resume Upload
+* [ ] AI Resume Analysis
+* [ ] Voice Interviews
+* [ ] Interview Recordings
+* [ ] Leaderboards
+* [ ] Recruiter Mode
+
+---
+
+## 🌟 Why FinalRound?
+
+Most interview preparation tools provide generic questions.
+
+FinalRound creates a personalized interview experience based on your resume, skills, performance history, and target role, helping you prepare for the interview that actually matters.
+
+---
+
+## 👩‍💻 Team
+
+Built with ❤️ by
+**Anshika**
+**Anchal Gupta**
+
