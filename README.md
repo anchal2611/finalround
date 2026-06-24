@@ -4,6 +4,8 @@
 
 ### AI-Powered Interview Preparation Platform
 
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&center=true&width=435&lines=FINALROUND;Practice+Smarter.;Interview+Better.;Get+Hired.)](https://git.io/typing-svg)
+
 Practice interviews tailored to your profile, receive intelligent feedback, analyze performance trends, and improve interview readiness through a personalized preparation experience.
 
 [Live Demo](YOUR_DEPLOYMENT_LINK) • [Report Issue](YOUR_REPO_LINK/issues) • [Request Feature](YOUR_REPO_LINK/issues)
