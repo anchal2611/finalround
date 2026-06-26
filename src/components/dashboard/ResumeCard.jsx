@@ -11,8 +11,12 @@ import { useAuth } from "../../context/AuthContext";
 
 import { uploadResume } from "../../services/uploadResume";
 
+import { useNavigate } from "react-router-dom";
+
 export default function ResumeCard() {
   const { user } = useAuth();
+
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] =
@@ -77,24 +81,7 @@ export default function ResumeCard() {
   }, [user]);
 
   const handleViewResume = async () => {
-    try {
-      const response = await fetch(
-        `/api/get-resume-url?key=${encodeURIComponent(
-          resume.resumeUrl
-        )}`
-      );
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error);
-      }
-
-      window.open(data.url, "_blank");
-    } catch (err) {
-      console.error(err);
-      alert("Unable to open resume.");
-    }
+    navigate("/dashboard/resume");
   };
 
   const handleResumeUpload = async (

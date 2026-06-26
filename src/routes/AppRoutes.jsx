@@ -21,6 +21,14 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/dashboard/resume"
+          element={
+          <ProtectedRoute>
+            <ResumeViewer/>
+          </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
