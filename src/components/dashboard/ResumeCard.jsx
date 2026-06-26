@@ -23,6 +23,7 @@ export default function ResumeCard() {
     atsScore: 0,
     uploaded: false,
     resumeUrl: "",
+    resumeKey: "",
     strengths: [],
     improvements: [],
   });
@@ -75,6 +76,27 @@ export default function ResumeCard() {
     fetchResume();
   }, [user]);
 
+  const handleViewResume = async () => {
+    try {
+      const response = await fetch(
+        `/api/get-resume-url?key=${encodeURIComponent(
+          resume.resumeKey
+        )}`
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+
+      window.open(data.url, "_blank");
+    } catch (err) {
+      console.error(err);
+      alert("Unable to open resume.");
+    }
+  };
+
   const handleResumeUpload = async (
   event
 ) => {
@@ -106,32 +128,25 @@ export default function ResumeCard() {
 
     setUploading(true);
 
-    const resumeUrl =
+    const { url, key } =
       await uploadResume(file);
-
-    await updateDoc(
-      doc(
-        db,
-        "users",
-        user.uid
-      ),
-      {
-        resumeUploaded: true,
-        resumeUrl,
-        uploadedAt:
-          new Date(),
-
-        resumeScore: 0,
-        atsScore: 0,
-        strengths: [],
-        improvements: [],
-      }
-    );
+    
+    await updateDoc(doc(db, "users", user.uid), {
+      resumeUploaded: true,
+      resumeUrl: url,
+      resumeKey: data.resumeKey || "",
+      uploadedAt: new Date(),
+      resumeScore: 0,
+      atsScore: 0,
+      strengths: [],
+      improvements: [],
+    });
 
     setResume((prev) => ({
       ...prev,
       uploaded: true,
-      resumeUrl,
+      resumeUrl: url,
+      resumeKey: key,
     }));
 
     alert(
@@ -422,11 +437,9 @@ export default function ResumeCard() {
 
             {resume.resumeUrl && (
                 <div className="mt-6 flex gap-3">
-                    <a
-                    href={resume.resumeUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="
+                    <button
+                      onClick={handleViewResume}
+                      className="
                         rounded-xl
                         bg-cyan-500
                         px-4
@@ -436,10 +449,10 @@ export default function ResumeCard() {
                         text-black
                         transition
                         hover:scale-105
-                    "
+                      "
                     >
-                    View Resume
-                    </a>
+                      View Resume
+                    </button>
 
                     <label
                     className="

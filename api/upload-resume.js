@@ -77,27 +77,20 @@ export default async function handler(
         file.filepath
       );
 
-    const key = `resumes/${Date.now()}-${
-      file.originalFilename
-    }`;
+    const key = `resumes/${Date.now()}-${file.originalFilename}`;
 
     await s3.send(
       new PutObjectCommand({
-        Bucket:
-          process.env
-            .S3_BUCKET_NAME,
+        Bucket: process.env.S3_BUCKET_NAME,
         Key: key,
         Body: fileBuffer,
-        ContentType:
-          "application/pdf",
+        ContentType: "application/pdf",
       })
     );
 
-    const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-
     return res.status(200).json({
       success: true,
-      url,
+      url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`,
       key,
     });
   } catch (err) {
