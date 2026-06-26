@@ -80,7 +80,7 @@ export default function ResumeCard() {
     try {
       const response = await fetch(
         `/api/get-resume-url?key=${encodeURIComponent(
-          resume.resumeKey
+          resume.resumeUrl
         )}`
       );
 

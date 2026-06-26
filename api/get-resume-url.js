@@ -8,8 +8,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId:
-      process.env.AWS_ACCESS_KEY_ID,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey:
       process.env.AWS_SECRET_ACCESS_KEY,
   },
@@ -27,13 +26,20 @@ export default async function handler(
   }
 
   try {
-    const { key } = req.query;
+    let { key } = req.query;
 
     if (!key) {
       return res.status(400).json({
         success: false,
-        error: "Missing file key",
+        error: "Missing key",
       });
+    }
+
+    // If frontend sends full URL, extract key
+    if (key.startsWith("http")) {
+      key = decodeURIComponent(
+        key.split(".amazonaws.com/")[1]
+      );
     }
 
     const command =
@@ -48,7 +54,7 @@ export default async function handler(
         s3,
         command,
         {
-          expiresIn: 300, // 5 minutes
+          expiresIn: 300,
         }
       );
 
@@ -61,9 +67,7 @@ export default async function handler(
 
     return res.status(500).json({
       success: false,
-      error:
-        err.message ||
-        "Failed to generate URL",
+      error: err.message,
     });
   }
 }
