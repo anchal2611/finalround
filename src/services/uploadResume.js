@@ -9,6 +9,7 @@ export async function uploadResume(
     file
   );
 
+  // Send the file to the server
   const response =
     await fetch(
       "/api/upload-resume",
