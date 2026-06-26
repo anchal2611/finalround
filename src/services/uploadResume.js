@@ -18,12 +18,31 @@ export async function uploadResume(
       }
     );
 
-  const data =
-    await response.json();
+  const text =
+    await response.text();
 
-  if (!data.success) {
+  console.log(
+    "SERVER RESPONSE:",
+    text
+  );
+
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
     throw new Error(
-      data.error
+      `Server returned:\n${text}`
+    );
+  }
+
+  if (
+    !response.ok ||
+    !data.success
+  ) {
+    throw new Error(
+      data.error ||
+        "Upload failed"
     );
   }
 
