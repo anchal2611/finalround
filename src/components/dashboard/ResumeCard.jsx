@@ -121,7 +121,6 @@ export default function ResumeCard() {
     await updateDoc(doc(db, "users", user.uid), {
       resumeUploaded: true,
       resumeUrl: url,
-      resumeKey: data.resumeKey || "",
       uploadedAt: new Date(),
       resumeScore: 0,
       atsScore: 0,
