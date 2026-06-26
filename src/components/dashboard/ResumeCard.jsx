@@ -9,7 +9,7 @@ import {
 import { db } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 
-import { uploadResume } from "../../services/uploadResume";
+import { uploadResume } from "../../services/upload-Resume";
 
 export default function ResumeCard() {
   const { user } = useAuth();
