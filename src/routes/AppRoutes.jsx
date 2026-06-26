@@ -5,6 +5,7 @@ import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import ProtectedRoute from "../components/ProtectedRoutes";
 import Dashboard from "../pages/Dashboard";
+import ResumeViewer from "./pages/ResumeViewer";
 
 export default function AppRoutes() {
   return (
