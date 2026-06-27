@@ -1,71 +1,76 @@
 import { GoogleGenAI } from "@google/genai";
-import ATS_PROMPT from "../prompts/atsPrompt";
+import ATS_PROMPT from "../prompts/atsPrompt.js";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-const SYSTEM_PROMPT = `
-You are an enterprise-level ATS evaluator and senior recruiter.
+export async function analyzeResumeWithGemini(
+  resumeText
+) {
+  try {
+    const prompt = `
+${ATS_PROMPT}
 
-You MUST return ONLY valid JSON.
+IMPORTANT:
 
-Return this exact structure:
+Return ONLY valid JSON.
+
+Do not use markdown.
+
+Do not wrap the JSON inside \`\`\`.
+
+Return exactly this format:
 
 {
-  "resumeScore": 0,
-  "atsScore": 0,
-  "verdict": "",
-  "summary": "",
-  "strengths": [],
-  "improvements": [],
-  "criticalFixes": [],
-  "missingKeywords": [],
-  "categoryScores": [
+  "resumeScore":0,
+  "atsScore":0,
+  "verdict":"",
+  "summary":"",
+  "strengths":[],
+  "improvements":[],
+  "criticalFixes":[],
+  "missingKeywords":[],
+  "categoryScores":[
     {
-      "category": "",
-      "score": 0,
-      "max": 0,
-      "feedback": ""
+      "category":"",
+      "score":0,
+      "max":0,
+      "feedback":""
     }
   ]
 }
 
-Analyze the resume according to these rules:
-
-${ATS_PROMPT}
-`;
-
-export async function analyzeResume(text) {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: `${SYSTEM_PROMPT}
-
 Resume:
 
-${text}`,
-            },
-          ],
-        },
-      ],
-    });
+${resumeText}
+`;
 
-    let output =
-      response.text.trim();
+    const response =
+      await ai.models.generateContent({
+        model: "gemini-2.5-flash",
 
-    // remove markdown if Gemini wraps JSON
-    output = output
+        contents: prompt,
+      });
+
+    let text =
+      response.text;
+
+    if (!text) {
+      throw new Error(
+        "Gemini returned an empty response."
+      );
+    }
+
+    // Remove markdown if Gemini adds it
+
+    text = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    return JSON.parse(output);
+    return JSON.parse(text);
+
   } catch (err) {
     console.error(
       "Gemini Error:",
@@ -73,7 +78,7 @@ ${text}`,
     );
 
     throw new Error(
-      "Gemini analysis failed."
+      "Failed to analyze resume."
     );
   }
 }

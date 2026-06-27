@@ -38,6 +38,8 @@ export default function ResumeCard() {
     categoryScores: [],
   });
 
+  const [status, setStatus] = useState("");
+
   useEffect(() => {
     if (!user) return;
 
@@ -89,6 +91,18 @@ export default function ResumeCard() {
 
             categoryScores:
               data.categoryScores || [],
+
+            resumeKey:
+              data.resumeKey || "",
+
+            missingKeywords:
+              analysis.missingKeywords,
+
+            criticalFixes:
+              analysis.criticalFixes,
+
+            categoryScores:
+              analysis.categoryScores,
           });
         }
       } catch (error) {
@@ -105,121 +119,136 @@ export default function ResumeCard() {
     navigate("/dashboard/resume");
   };
 
-  const handleResumeUpload = async (
-  event
-) => {
-  try {
-    const file =
-      event.target.files?.[0];
+  const handleResumeUpload = async (event) => {
+    try {
+      const file = event.target.files?.[0];
 
-    if (!file) return;
+      if (!file) return;
 
-    if (
-      file.type !==
-      "application/pdf"
-    ) {
-      alert(
-        "Please upload a PDF resume."
+      // Reset input so selecting the same file again works
+      event.target.value = "";
+
+      if (file.type !== "application/pdf") {
+        alert("Please upload a PDF resume.");
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Resume must be under 10MB.");
+        return;
+      }
+
+      setUploading(true);
+      setStatus("Uploading Resume...");
+
+      // Upload to S3
+      const { url, key } = await uploadResume(file);
+
+      setStatus("Analyzing Resume with AI...");
+
+      // Gemini Analysis
+      const analysis = await analyzeResume(url);
+
+      if (!analysis || typeof analysis !== "object") {
+        throw new Error("AI analysis failed.");
+      }
+
+      setStatus("Saving Results...");
+
+      // Save to Firestore
+      await updateDoc(
+        doc(db, "users", user.uid),
+        {
+          resumeUploaded: true,
+
+          resumeUrl: url,
+
+          resumeKey: key,
+
+          uploadedAt: new Date(),
+
+          resumeScore:
+            analysis.resumeScore ?? 0,
+
+          atsScore:
+            analysis.atsScore ?? 0,
+
+          strengths:
+            analysis.strengths ?? [],
+
+          improvements:
+            analysis.improvements ?? [],
+
+          summary:
+            analysis.summary ?? "",
+
+          verdict:
+            analysis.verdict ?? "",
+
+          missingKeywords:
+            analysis.missingKeywords ?? [],
+
+          criticalFixes:
+            analysis.criticalFixes ?? [],
+
+          categoryScores:
+            analysis.categoryScores ?? [],
+        }
       );
-      return;
-    }
 
-    if (
-      file.size >
-      10 * 1024 * 1024
-    ) {
-      alert(
-        "Resume must be under 10MB."
-      );
-      return;
-    }
-
-    setUploading(true);
-
-    const { url, key } =
-      await uploadResume(file);
-
-    const analysis =
-      await analyzeResume(url);
-
-    await updateDoc(
-      doc(db, "users", user.uid),
-      {
-        resumeUploaded: true,
+      // Update UI instantly
+      setResume({
+        uploaded: true,
 
         resumeUrl: url,
 
-        uploadedAt: new Date(),
+        resumeKey: key,
 
-        resumeScore:
-          analysis.resumeScore,
+        score:
+          analysis.resumeScore ?? 0,
 
         atsScore:
-          analysis.atsScore,
+          analysis.atsScore ?? 0,
 
         strengths:
-          analysis.strengths,
+          analysis.strengths ?? [],
 
         improvements:
-          analysis.improvements,
+          analysis.improvements ?? [],
 
         summary:
-          analysis.summary,
+          analysis.summary ?? "",
 
         verdict:
-          analysis.verdict,
+          analysis.verdict ?? "",
 
         missingKeywords:
-          analysis.missingKeywords,
+          analysis.missingKeywords ?? [],
 
         criticalFixes:
-          analysis.criticalFixes,
+          analysis.criticalFixes ?? [],
 
         categoryScores:
-          analysis.categoryScores,
-      }
-    );
+          analysis.categoryScores ?? [],
+      });
 
-    setResume({
-      uploaded: true,
+      setStatus("");
 
-      resumeUrl: url,
+      alert("Resume analyzed successfully!");
 
-      resumeKey: key,
+    } catch (error) {
+      console.error(error);
 
-      score:
-        analysis.resumeScore,
+      setStatus("");
 
-      atsScore:
-        analysis.atsScore,
-
-      strengths:
-        analysis.strengths,
-
-      improvements:
-        analysis.improvements,
-
-      summary:
-        analysis.summary,
-
-      verdict:
-        analysis.verdict,
-    });
-
-    alert(
-      "Resume uploaded successfully!"
-    );
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error.message ||
+      alert(
+        error.message ||
         "Resume upload failed."
-    );
-  } finally {
-    setUploading(false);
-  }
-};
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -414,6 +443,52 @@ export default function ResumeCard() {
                   {resume.atsScore}%
                 </span>
               </div>
+            </div>
+
+            {/* Summary */}
+
+            <div
+              className="
+                mb-6
+                rounded-2xl
+                border
+                border-white/10
+                bg-white/5
+                p-5
+              "
+            >
+              <h4 className="mb-2 font-semibold">
+                AI Summary
+              </h4>
+
+              <p className="text-sm text-zinc-400 leading-7">
+                {resume.summary}
+              </p>
+            </div>
+
+            {/* Verdict */}
+
+            <div
+            className={`
+            inline-flex
+            px-4
+            py-2
+            rounded-full
+            text-sm
+            font-medium
+
+            ${
+              resume.verdict ===
+              "Likely to Pass ATS"
+                ? "bg-green-500/20 text-green-400"
+                : resume.verdict ===
+                  "Borderline"
+                ? "bg-yellow-500/20 text-yellow-400"
+                : "bg-red-500/20 text-red-400"
+            }
+            `}
+            >
+            {resume.verdict}
             </div>
 
             {/* Strengths */}

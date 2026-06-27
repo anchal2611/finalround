@@ -2,14 +2,25 @@ import pdf from "pdf-parse";
 
 export async function extractTextFromBuffer(buffer) {
   try {
-    const parsed = await pdf(buffer);
+    const data = await pdf(buffer);
 
-    return parsed.text
+    const cleanedText = data.text
       .replace(/\r/g, "")
-      .replace(/\n+/g, "\n")
+      .replace(/\t/g, " ")
+      .replace(/\n{2,}/g, "\n")
+      .replace(/[ ]{2,}/g, " ")
       .trim();
-  } catch (err) {
-    console.error(err);
-    throw new Error("Failed to parse PDF.");
+
+    if (!cleanedText) {
+      throw new Error("No text found in PDF.");
+    }
+
+    return cleanedText;
+  } catch (error) {
+    console.error("PDF Parse Error:", error);
+
+    throw new Error(
+      "Failed to extract text from resume."
+    );
   }
 }
