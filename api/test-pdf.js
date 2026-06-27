@@ -2,18 +2,49 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 export default async function handler(req, res) {
   try {
-    console.log("Loading PDF.js...");
+    const pdfUrl =
+      "https://finalround-resumes-000363030480-ap-southeast-2-an.s3.ap-southeast-2.amazonaws.com/resumes/1782578739486-AnchalGupta_ResumeInternship_704.pdf";
 
-    const loadingTask = pdfjsLib.getDocument({
-      data: new Uint8Array([
-        37, 80, 68, 70, 45, 49, 46, 52,
-      ]), // Just a dummy PDF header
-    });
+    const response = await fetch(pdfUrl);
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to download PDF."
+      );
+    }
+
+    const arrayBuffer =
+      await response.arrayBuffer();
+
+    const pdf =
+      await pdfjsLib.getDocument({
+        data: arrayBuffer,
+      }).promise;
+
+    let text = "";
+
+    for (
+      let page = 1;
+      page <= pdf.numPages;
+      page++
+    ) {
+      const currentPage =
+        await pdf.getPage(page);
+
+      const content =
+        await currentPage.getTextContent();
+
+      text +=
+        content.items
+          .map((item) => item.str)
+          .join(" ") + "\n";
+    }
 
     return res.status(200).json({
       success: true,
-      message: "pdfjs-dist imported successfully!",
-      version: pdfjsLib.version,
+      pages: pdf.numPages,
+      characters: text.length,
+      preview: text.slice(0, 1000),
     });
 
   } catch (err) {
