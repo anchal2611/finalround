@@ -1,18 +1,31 @@
-export async function uploadResume(file) {
-  const formData = new FormData();
+export async function analyzeResume(
+  resumeUrl
+) {
+  const response =
+    await fetch(
+      "/api/analyze-resume",
+      {
+        method: "POST",
 
-  formData.append("resume", file);
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
 
-  const response = await fetch("/api/upload-resume", {
-    method: "POST",
-    body: formData,
-  });
+        body: JSON.stringify({
+          resumeUrl,
+        }),
+      }
+    );
 
-  const data = await response.json();
+  const data =
+    await response.json();
 
-  if (!response.ok || !data.success) {
-    throw new Error(data.error || "Upload failed");
+  if (!data.success) {
+    throw new Error(
+      data.error
+    );
   }
 
-  return data;
+  return data.analysis;
 }

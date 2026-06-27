@@ -10,6 +10,7 @@ import { db } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 
 import { uploadResume } from "../../services/uploadResume";
+import { analyzeResume } from "../../services/analyzeResume";
 
 import { useNavigate } from "react-router-dom";
 
@@ -30,6 +31,11 @@ export default function ResumeCard() {
     resumeKey: "",
     strengths: [],
     improvements: [],
+    summary: "",
+    verdict: "",
+    missingKeywords: [],
+    criticalFixes: [],
+    categoryScores: [],
   });
 
   useEffect(() => {
@@ -68,6 +74,21 @@ export default function ResumeCard() {
 
             improvements:
               data.improvements || [],
+
+            summary:
+              data.summary || "",
+
+            verdict:
+              data.verdict || "",
+
+            missingKeywords:
+              data.missingKeywords || [],
+
+            criticalFixes:
+              data.criticalFixes || [],
+
+            categoryScores:
+              data.categoryScores || [],
           });
         }
       } catch (error) {
@@ -117,23 +138,73 @@ export default function ResumeCard() {
 
     const { url, key } =
       await uploadResume(file);
-    
-    await updateDoc(doc(db, "users", user.uid), {
-      resumeUploaded: true,
-      resumeUrl: url,
-      uploadedAt: new Date(),
-      resumeScore: 0,
-      atsScore: 0,
-      strengths: [],
-      improvements: [],
-    });
 
-    setResume((prev) => ({
-      ...prev,
+    const analysis =
+      await analyzeResume(url);
+
+    await updateDoc(
+      doc(db, "users", user.uid),
+      {
+        resumeUploaded: true,
+
+        resumeUrl: url,
+
+        uploadedAt: new Date(),
+
+        resumeScore:
+          analysis.resumeScore,
+
+        atsScore:
+          analysis.atsScore,
+
+        strengths:
+          analysis.strengths,
+
+        improvements:
+          analysis.improvements,
+
+        summary:
+          analysis.summary,
+
+        verdict:
+          analysis.verdict,
+
+        missingKeywords:
+          analysis.missingKeywords,
+
+        criticalFixes:
+          analysis.criticalFixes,
+
+        categoryScores:
+          analysis.categoryScores,
+      }
+    );
+
+    setResume({
       uploaded: true,
+
       resumeUrl: url,
+
       resumeKey: key,
-    }));
+
+      score:
+        analysis.resumeScore,
+
+      atsScore:
+        analysis.atsScore,
+
+      strengths:
+        analysis.strengths,
+
+      improvements:
+        analysis.improvements,
+
+      summary:
+        analysis.summary,
+
+      verdict:
+        analysis.verdict,
+    });
 
     alert(
       "Resume uploaded successfully!"
