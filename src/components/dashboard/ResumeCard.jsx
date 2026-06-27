@@ -96,13 +96,13 @@ export default function ResumeCard() {
               data.resumeKey || "",
 
             missingKeywords:
-              analysis.missingKeywords,
+              data.missingKeywords,
 
             criticalFixes:
-              analysis.criticalFixes,
+              data.criticalFixes,
 
             categoryScores:
-              analysis.categoryScores,
+              data.categoryScores,
           });
         }
       } catch (error) {

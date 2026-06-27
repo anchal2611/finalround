@@ -103,9 +103,7 @@ export async function analyzeResumeWithGemini(buffer) {
     // TEMPORARY DEBUG
     // JSON.parse intentionally skipped
 
-    return {
-      raw: text,
-    };
+    return JSON.parse(text);
 
   } catch (err) {
     console.error(

@@ -77,6 +77,11 @@ export default async function handler(req, res) {
         buffer
       );
 
+    console.log(
+      "Gemini Analysis:",
+      analysis
+    );
+
     return res.status(200).json({
       success: true,
       analysis,
