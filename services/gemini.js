@@ -103,10 +103,16 @@ export async function analyzeResumeWithGemini(buffer) {
     // TEMPORARY DEBUG
     // JSON.parse intentionally skipped
 
-    return {
-      raw: text,
-    };
+    const jsonString =
+      text.substring(
+        firstBrace,
+        lastBrace + 1
+      );
 
+    const analysis = JSON.parse(jsonString);
+
+    return analysis;
+    
   } catch (err) {
     console.error(
       "Gemini Error:"
