@@ -9,31 +9,27 @@ const ai = new GoogleGenAI({
 });
 
 export async function analyzeResumeWithGemini(buffer) {
-  let tempFile = null;
+  let tempPath = null;
 
   try {
-    // Create temporary PDF
-    tempFile = path.join(
+    // Save PDF temporarily
+    tempPath = path.join(
       os.tmpdir(),
       `resume-${Date.now()}.pdf`
     );
 
-    fs.writeFileSync(tempFile, buffer);
+    fs.writeFileSync(tempPath, buffer);
 
-    console.log("Uploading PDF to Gemini...");
+    console.log("Uploading PDF...");
 
     const uploadedFile =
       await ai.files.upload({
-        file: tempFile,
-        config: {
-          mimeType: "application/pdf",
-        },
+        file: tempPath,
       });
 
-    console.log(
-      "Uploaded:",
-      uploadedFile.name
-    );
+    console.log(uploadedFile);
+
+    console.log("Generating ATS Report...");
 
     const response =
       await ai.models.generateContent({
@@ -41,15 +37,13 @@ export async function analyzeResumeWithGemini(buffer) {
 
         contents: [
           uploadedFile,
+
           ATS_PROMPT,
         ],
       });
 
-    const text =
-      response.text
-        ?.replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
+    let text =
+      response.text;
 
     if (!text) {
       throw new Error(
@@ -57,14 +51,38 @@ export async function analyzeResumeWithGemini(buffer) {
       );
     }
 
-    return JSON.parse(text);
+    text = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    const json =
+      JSON.parse(text);
+
+    // Cleanup uploaded file
+    try {
+      await ai.files.delete({
+        name: uploadedFile.name,
+      });
+    } catch (e) {
+      console.log(
+        "Unable to delete uploaded file."
+      );
+    }
+
+    return json;
+
+  } catch (err) {
+    console.error(err);
+
+    throw err;
 
   } finally {
     if (
-      tempFile &&
-      fs.existsSync(tempFile)
+      tempPath &&
+      fs.existsSync(tempPath)
     ) {
-      fs.unlinkSync(tempFile);
+      fs.unlinkSync(tempPath);
     }
   }
 }

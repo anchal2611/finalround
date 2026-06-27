@@ -3,27 +3,18 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 
-import { GoogleGenAI } from "@google/genai";
-import ATS_PROMPT from "../prompts/atsPrompt.js";
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+import { analyzeResumeWithGemini } from "../services/gemini.js";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId:
-      process.env.AWS_ACCESS_KEY_ID,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey:
       process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-export default async function handler(
-  req,
-  res
-) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
@@ -41,23 +32,30 @@ export default async function handler(
       });
     }
 
-    // Extract S3 object key
+    console.log("Resume URL:", resumeUrl);
+
+    // Extract S3 key
     const url = new URL(resumeUrl);
 
     const key = decodeURIComponent(
       url.pathname.substring(1)
     );
 
-    console.log("Key:", key);
+    console.log("S3 Key:", key);
 
-    // Download PDF from S3
+    // Download resume
     const object = await s3.send(
       new GetObjectCommand({
-        Bucket:
-          process.env.S3_BUCKET_NAME,
+        Bucket: process.env.S3_BUCKET_NAME,
         Key: key,
       })
     );
+
+    if (!object.Body) {
+      throw new Error(
+        "Resume body is empty."
+      );
+    }
 
     const chunks = [];
 
@@ -65,53 +63,19 @@ export default async function handler(
       chunks.push(chunk);
     }
 
-    const pdfBuffer =
-      Buffer.concat(chunks);
+    const buffer = Buffer.concat(chunks);
 
     console.log(
-      "Downloaded:",
-      pdfBuffer.length
+      "Downloaded PDF:",
+      buffer.length,
+      "bytes"
     );
 
-    // Convert PDF to Base64
-    const pdfBase64 =
-      pdfBuffer.toString("base64");
-
-    // Ask Gemini to analyze the PDF directly
-    const response =
-      await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-
-        contents: [
-          {
-            inlineData: {
-              mimeType:
-                "application/pdf",
-              data: pdfBase64,
-            },
-          },
-          {
-            text: ATS_PROMPT,
-          },
-        ],
-      });
-
-    let text =
-      response.text;
-
-    if (!text) {
-      throw new Error(
-        "Gemini returned an empty response."
-      );
-    }
-
-    text = text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
+    // Gemini
     const analysis =
-      JSON.parse(text);
+      await analyzeResumeWithGemini(
+        buffer
+      );
 
     return res.status(200).json({
       success: true,
@@ -119,6 +83,10 @@ export default async function handler(
     });
 
   } catch (err) {
+    console.error(
+      "Analyze Resume Error:"
+    );
+
     console.error(err);
 
     return res.status(500).json({

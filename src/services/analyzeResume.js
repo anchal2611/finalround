@@ -1,47 +1,31 @@
 export async function analyzeResume(
   resumeUrl
 ) {
-  try {
-    const response = await fetch(
-      "/api/analyze-resume",
-      {
-        method: "POST",
+  const response = await fetch(
+    "/api/analyze-resume",
+    {
+      method: "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
 
-        body: JSON.stringify({
-          resumeUrl,
-        }),
-      }
-    );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-          "Failed to analyze resume."
-      );
+      body: JSON.stringify({
+        resumeUrl,
+      }),
     }
+  );
 
-    if (!data.success) {
-      throw new Error(
-        data.error ||
-          "Resume analysis failed."
-      );
-    }
+  const data =
+    await response.json();
 
-    return data.analysis;
-  } catch (error) {
-    console.error(
-      "Analyze Resume Error:",
-      error
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+        "Analysis failed."
     );
-
-    throw error;
   }
+
+  return data.analysis;
 }
