@@ -1,84 +1,70 @@
 import { GoogleGenAI } from "@google/genai";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import ATS_PROMPT from "../prompts/atsPrompt.js";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-export async function analyzeResumeWithGemini(
-  resumeText
-) {
+export async function analyzeResumeWithGemini(buffer) {
+  let tempFile = null;
+
   try {
-    const prompt = `
-${ATS_PROMPT}
+    // Create temporary PDF
+    tempFile = path.join(
+      os.tmpdir(),
+      `resume-${Date.now()}.pdf`
+    );
 
-IMPORTANT:
+    fs.writeFileSync(tempFile, buffer);
 
-Return ONLY valid JSON.
+    console.log("Uploading PDF to Gemini...");
 
-Do not use markdown.
+    const uploadedFile =
+      await ai.files.upload({
+        file: tempFile,
+        config: {
+          mimeType: "application/pdf",
+        },
+      });
 
-Do not wrap the JSON inside \`\`\`.
-
-Return exactly this format:
-
-{
-  "resumeScore":0,
-  "atsScore":0,
-  "verdict":"",
-  "summary":"",
-  "strengths":[],
-  "improvements":[],
-  "criticalFixes":[],
-  "missingKeywords":[],
-  "categoryScores":[
-    {
-      "category":"",
-      "score":0,
-      "max":0,
-      "feedback":""
-    }
-  ]
-}
-
-Resume:
-
-${resumeText}
-`;
+    console.log(
+      "Uploaded:",
+      uploadedFile.name
+    );
 
     const response =
       await ai.models.generateContent({
         model: "gemini-2.5-flash",
 
-        contents: prompt,
+        contents: [
+          uploadedFile,
+          ATS_PROMPT,
+        ],
       });
 
-    let text =
-      response.text;
+    const text =
+      response.text
+        ?.replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
     if (!text) {
       throw new Error(
-        "Gemini returned an empty response."
+        "Gemini returned empty response."
       );
     }
 
-    // Remove markdown if Gemini adds it
-
-    text = text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
     return JSON.parse(text);
 
-  } catch (err) {
-    console.error(
-      "Gemini Error:",
-      err
-    );
-
-    throw new Error(
-      "Failed to analyze resume."
-    );
+  } finally {
+    if (
+      tempFile &&
+      fs.existsSync(tempFile)
+    ) {
+      fs.unlinkSync(tempFile);
+    }
   }
 }
