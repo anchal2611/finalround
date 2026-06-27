@@ -10,6 +10,7 @@ const ai = new GoogleGenAI({
 
 export async function analyzeResumeWithGemini(buffer) {
   let tempPath = null;
+  let uploadedFile = null;
 
   try {
     // Save PDF temporarily
@@ -22,12 +23,14 @@ export async function analyzeResumeWithGemini(buffer) {
 
     console.log("Uploading PDF...");
 
-    const uploadedFile =
-      await ai.files.upload({
-        file: tempPath,
-      });
+    uploadedFile = await ai.files.upload({
+      file: tempPath,
+      config: {
+        mimeType: "application/pdf",
+      },
+    });
 
-    console.log(uploadedFile);
+    console.log("Uploaded:", uploadedFile);
 
     console.log("Generating ATS Report...");
 
@@ -36,48 +39,70 @@ export async function analyzeResumeWithGemini(buffer) {
         model: "gemini-2.5-flash",
 
         contents: [
-          uploadedFile,
-
-          ATS_PROMPT,
+          {
+            role: "user",
+            parts: [
+              {
+                fileData: {
+                  fileUri: uploadedFile.uri,
+                  mimeType:
+                    uploadedFile.mimeType,
+                },
+              },
+              {
+                text: ATS_PROMPT,
+              },
+            ],
+          },
         ],
+
+        config: {
+          temperature: 0.2,
+          maxOutputTokens: 2000,
+        },
       });
 
-    let text =
-      response.text;
+    const text =
+      response.text?.trim();
 
     if (!text) {
       throw new Error(
-        "Gemini returned empty response."
+        "Gemini returned an empty response."
       );
     }
 
-    text = text
+    const cleaned = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    const json =
-      JSON.parse(text);
-
-    // Cleanup uploaded file
-    try {
-      await ai.files.delete({
-        name: uploadedFile.name,
-      });
-    } catch (e) {
-      console.log(
-        "Unable to delete uploaded file."
-      );
-    }
-
-    return json;
+    return JSON.parse(cleaned);
 
   } catch (err) {
+    console.error(
+      "Gemini Error:"
+    );
+
     console.error(err);
 
     throw err;
 
   } finally {
+    if (
+      uploadedFile?.name
+    ) {
+      try {
+        await ai.files.delete({
+          name:
+            uploadedFile.name,
+        });
+      } catch (e) {
+        console.log(
+          "Unable to delete uploaded file."
+        );
+      }
+    }
+
     if (
       tempPath &&
       fs.existsSync(tempPath)
