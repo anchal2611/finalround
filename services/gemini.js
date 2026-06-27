@@ -34,124 +34,144 @@ export async function analyzeResumeWithGemini(buffer) {
 
     console.log("Generating ATS Report...");
 
-   const response =
-    await ai.models.generateContent({
+    const response =
+      await ai.models.generateContent({
         model: "gemini-2.5-flash",
 
         contents: [
-        {
+          {
             role: "user",
             parts: [
-            {
+              {
                 fileData: {
-                fileUri: uploadedFile.uri,
-                mimeType: uploadedFile.mimeType,
+                  fileUri: uploadedFile.uri,
+                  mimeType:
+                    uploadedFile.mimeType,
                 },
-            },
-            {
+              },
+              {
                 text: ATS_PROMPT,
-            },
+              },
             ],
-        },
+          },
         ],
 
         config: {
-        temperature: 0.2,
-        maxOutputTokens: 4000,
-        responseMimeType: "application/json",
+          temperature: 0.2,
+          maxOutputTokens: 4000,
+          responseMimeType:
+            "application/json",
         },
-    });
+      });
 
     let text = response.text;
 
-    // Some SDK versions expose response.text() instead of response.text
     if (typeof text === "function") {
-    text = await text();
+      text = await text();
     }
 
     if (!text) {
-    throw new Error(
+      throw new Error(
         "Gemini returned an empty response."
-    );
+      );
     }
 
     console.log(
-    "========== GEMINI RAW =========="
+      "========== GEMINI RAW =========="
     );
     console.log(text);
     console.log(
-    "================================"
+      "================================"
     );
 
-    // Remove markdown if Gemini still adds it
     text = text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-    // Find JSON object
-    const firstBrace = text.indexOf("{");
-    const lastBrace = text.lastIndexOf("}");
+    const firstBrace =
+      text.indexOf("{");
+
+    const lastBrace =
+      text.lastIndexOf("}");
 
     if (
-    firstBrace === -1 ||
-    lastBrace === -1
+      firstBrace === -1 ||
+      lastBrace === -1
     ) {
-    throw new Error(
-        "Gemini did not return JSON:\n\n" +
-        text
-    );
+      throw new Error(
+        "Gemini did not return JSON.\n\n" +
+          text
+      );
     }
 
-    const jsonString = text.substring(
-    firstBrace,
-    lastBrace + 1
-    );
+    const jsonString =
+      text.substring(
+        firstBrace,
+        lastBrace + 1
+      );
 
     let analysis;
 
     try {
-    analysis = JSON.parse(jsonString);
+      analysis =
+        JSON.parse(jsonString);
     } catch (err) {
-    console.error(
-        "===== INVALID JSON ====="
-    );
-    console.error(jsonString);
-    console.error(
-        "========================"
-    );
+      console.error(
+        "===== RAW GEMINI RESPONSE ====="
+      );
+      console.log(text);
+      console.error(
+        "==============================="
+      );
 
-    throw err;
-    }     return analysis;
+      console.error(
+        "===== EXTRACTED JSON ====="
+      );
+      console.log(jsonString);
+      console.error(
+        "=========================="
+      );
+
+      throw err;
+    }
+
+    return analysis;
 
   } catch (err) {
-    console.error("Gemini Error:");
+    console.error(
+      "Gemini Error:"
+    );
     console.error(err);
 
     throw err;
 
   } finally {
-    // Delete uploaded Gemini file
     if (uploadedFile?.name) {
       try {
         await ai.files.delete({
-          name: uploadedFile.name,
+          name:
+            uploadedFile.name,
         });
 
-        console.log("Deleted uploaded Gemini file.");
+        console.log(
+          "Deleted Gemini uploaded file."
+        );
       } catch (e) {
         console.log(
-          "Unable to delete uploaded Gemini file."
+          "Unable to delete Gemini uploaded file."
         );
       }
     }
 
-    // Delete temporary local PDF
     if (
       tempPath &&
       fs.existsSync(tempPath)
     ) {
       fs.unlinkSync(tempPath);
+      console.log(
+        "Deleted temporary PDF."
+      );
     }
   }
 }
