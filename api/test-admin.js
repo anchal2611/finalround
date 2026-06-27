@@ -1,26 +1,12 @@
-import { adminDb } from "../firebase/admin";
-
-export default async function handler(
-  req,
-  res
-) {
+export default async function handler(req, res) {
   try {
-    await adminDb
-      .collection("test")
-      .doc("hello")
-      .set({
-        working: true,
-        time: new Date(),
-      });
-
-    return res.json({
-      success: true,
+    return res.status(200).json({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      hasEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+      hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
     });
   } catch (err) {
-    console.error(err);
-
     return res.status(500).json({
-      success: false,
       error: err.message,
     });
   }
