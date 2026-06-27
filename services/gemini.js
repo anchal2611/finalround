@@ -45,8 +45,7 @@ export async function analyzeResumeWithGemini(buffer) {
               {
                 fileData: {
                   fileUri: uploadedFile.uri,
-                  mimeType:
-                    uploadedFile.mimeType,
+                  mimeType: uploadedFile.mimeType,
                 },
               },
               {
@@ -59,8 +58,7 @@ export async function analyzeResumeWithGemini(buffer) {
         config: {
           temperature: 0.2,
           maxOutputTokens: 4000,
-          responseMimeType:
-            "application/json",
+          responseMimeType: "application/json",
         },
       });
 
@@ -89,11 +87,8 @@ export async function analyzeResumeWithGemini(buffer) {
       .replace(/```/g, "")
       .trim();
 
-    const firstBrace =
-      text.indexOf("{");
-
-    const lastBrace =
-      text.lastIndexOf("}");
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
 
     if (
       firstBrace === -1 ||
@@ -105,38 +100,12 @@ export async function analyzeResumeWithGemini(buffer) {
       );
     }
 
-    const jsonString =
-      text.substring(
-        firstBrace,
-        lastBrace + 1
-      );
+    // TEMPORARY DEBUG
+    // JSON.parse intentionally skipped
 
-    let analysis;
-
-    try {
-      analysis =
-        JSON.parse(jsonString);
-    } catch (err) {
-      console.error(
-        "===== RAW GEMINI RESPONSE ====="
-      );
-      console.log(text);
-      console.error(
-        "==============================="
-      );
-
-      console.error(
-        "===== EXTRACTED JSON ====="
-      );
-      console.log(jsonString);
-      console.error(
-        "=========================="
-      );
-
-      throw err;
-    }
-
-    return analysis;
+    return {
+      raw: text,
+    };
 
   } catch (err) {
     console.error(
@@ -150,8 +119,7 @@ export async function analyzeResumeWithGemini(buffer) {
     if (uploadedFile?.name) {
       try {
         await ai.files.delete({
-          name:
-            uploadedFile.name,
+          name: uploadedFile.name,
         });
 
         console.log(
