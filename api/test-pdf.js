@@ -1,8 +1,13 @@
-import pdf from "pdf-parse";
+import {
+  extractTextFromBuffer,
+} from "../utils/extractText.js";
 
-export default async function handler(req, res) {
+export default async function handler(
+  req,
+  res
+) {
   return res.status(200).json({
     success: true,
-    pdf: typeof pdf,
+    message: "extractText loaded",
   });
 }
