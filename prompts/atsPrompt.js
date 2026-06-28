@@ -1,4 +1,6 @@
+const currentDate = new Date().toISOString().split("T")[0];
 const ATS_PROMPT = `
+Current Date: ${currentDate}
 You are a professional ATS resume evaluator and senior technical recruiter.
 
 Analyze the uploaded resume honestly.
