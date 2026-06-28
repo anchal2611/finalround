@@ -5,7 +5,10 @@ import {
   FaBolt,
 } from "react-icons/fa";
 
+import { useNavigate } from "react-router-dom";
+
 export default function StartInterview() {
+  const navigate = useNavigate();
   return (
     <motion.div
       initial={{
