@@ -143,6 +143,7 @@ export default function StartInterview() {
           whileTap={{
             scale: 0.95,
           }}
+          onClick={() => navigate("/interview/setup")}
           className="
             mt-10
             flex

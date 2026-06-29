@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 import { db } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 import {
   FaUserGraduate,
@@ -13,6 +14,7 @@ import {
 
 export default function WelcomeCard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
 
@@ -271,6 +273,7 @@ export default function WelcomeCard() {
             whileTap={{
               scale: 0.95,
             }}
+            onClick={() => navigate("/interview/setup")}
             className="
               flex
               items-center

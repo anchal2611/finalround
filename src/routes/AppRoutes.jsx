@@ -8,6 +8,7 @@ import Signup from "../pages/Signup";
 import ProtectedRoute from "../components/ProtectedRoutes";
 import Dashboard from "../pages/Dashboard";
 import ResumeViewer from "../pages/ResumeViewer";
+import InterviewSetup from "../pages/InterviewSetup";
 
 export default function AppRoutes() {
   return (
@@ -25,11 +26,27 @@ export default function AppRoutes() {
           }
         />
         <Route
+          path="/interview/setup"
+          element={
+            <ProtectedRoute>
+              <InterviewSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/resume"
           element={
-          <ProtectedRoute>
-            <ResumeViewer/>
-          </ProtectedRoute>
+            <ProtectedRoute>
+              <ResumeViewer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview/resume"
+          element={
+            <ProtectedRoute>
+              <InterviewResume />
+            </ProtectedRoute>
           }
         />
       </Routes>
