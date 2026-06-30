@@ -329,7 +329,7 @@ export default function InterviewResults() {
                     text-sm
                   "
                 >
-                  Ready for Interviews ✅
+                  Ready for Interviews
                 </span>
 
               </div>
@@ -448,15 +448,15 @@ export default function InterviewResults() {
     <div className="space-y-5 mt-8">
 
       <div className="rounded-2xl bg-green-500/10 p-5">
-        ✅ Excellent Communication Skills
+        Excellent Communication Skills
       </div>
 
       <div className="rounded-2xl bg-green-500/10 p-5">
-        ✅ Strong React Fundamentals
+        Strong React Fundamentals
       </div>
 
       <div className="rounded-2xl bg-green-500/10 p-5">
-        ✅ Structured Problem Solving
+        Structured Problem Solving
       </div>
 
     </div>
@@ -468,15 +468,15 @@ export default function InterviewResults() {
     <div className="space-y-5 mt-8">
 
       <div className="rounded-2xl bg-red-500/10 p-5">
-        • Improve System Design Concepts
+        Improve System Design Concepts
       </div>
 
       <div className="rounded-2xl bg-red-500/10 p-5">
-        • Optimize API Performance Discussions
+        Optimize API Performance Discussions
       </div>
 
       <div className="rounded-2xl bg-red-500/10 p-5">
-        • Explain Edge Cases More Clearly
+        Explain Edge Cases More Clearly
       </div>
 
     </div>
@@ -500,7 +500,7 @@ export default function InterviewResults() {
 >
 
   <h2 className="text-3xl font-bold">
-    🤖 AI Interview Feedback
+    AI Interview Feedback
   </h2>
 
   <p className="mt-6 text-zinc-400 leading-8">
@@ -550,7 +550,7 @@ export default function InterviewResults() {
 
   >
 
-    ← Dashboard
+    Dashboard
 
   </button>
 
