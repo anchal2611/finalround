@@ -223,7 +223,7 @@ export default function InterviewTechnical() {
                     transition
                 "
                 >
-                ← Resume Round
+                Resume Round
                 </button>
 
               <button
@@ -237,7 +237,7 @@ export default function InterviewTechnical() {
                   font-medium
                 "
               >
-                Next →
+                Next
               </button>
 
             </div>
