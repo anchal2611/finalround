@@ -524,7 +524,7 @@ export default function InterviewSetup() {
                         transition
                         "
                     >
-                        ← Dashboard
+                        Dashboard
                     </button>
 
                     <motion.button
@@ -546,7 +546,7 @@ export default function InterviewSetup() {
                         shadow-xl
                         "
                     >
-                        Start Interview →
+                        Start Interview
                     </motion.button>
 
                     </div>
