@@ -312,7 +312,7 @@ export default function InterviewResume() {
                     transition
                 "
                 >
-                ← Back
+                Back
                 </button>
 
               <button
@@ -326,7 +326,7 @@ export default function InterviewResume() {
                     font-medium
                 "
                 >
-                Continue to Technical →
+                Continue to Technical
                 </button>
 
             </div>
