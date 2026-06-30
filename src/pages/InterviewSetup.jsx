@@ -11,6 +11,10 @@ import {
   FaChartLine,
 } from "react-icons/fa";
 
+import SpeechRecognition, {
+    useSpeechRecognition
+} from "react-speech-recognition";
+
 export default function InterviewSetup() {
   const navigate = useNavigate();
 
@@ -21,6 +25,24 @@ export default function InterviewSetup() {
 
   const [difficulty, setDifficulty] =
     useState("Medium");
+
+  useEffect(() => {
+    checkMicrophone();
+  }, []);
+
+  const [micPermission, setMicPermission] = useState(false);
+
+  const [browserSupported, setBrowserSupported] = useState(false);
+
+  const [micDevice, setMicDevice] = useState("");
+
+  const [testingMic, setTestingMic] = useState(false);
+
+  const [micWorking, setMicWorking] = useState(false);
+
+  const [permissionError, setPermissionError] = useState("");
+
+  const [transcript, setTranscript] = useState("");
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
