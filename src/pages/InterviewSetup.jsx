@@ -509,39 +509,47 @@ export default function InterviewSetup() {
 
                 </div>
 
-                <div className="flex lg:justify-end">
+                <div className="flex lg:justify-end gap-4">
 
-                  <motion.button
+                    <button
+                        onClick={() => navigate("/dashboard")}
+                        className="
+                        rounded-2xl
+                        border
+                        border-white/10
+                        bg-white/5
+                        px-8
+                        py-4
+                        hover:bg-white/10
+                        transition
+                        "
+                    >
+                        ← Dashboard
+                    </button>
 
-                    whileHover={{
-                      scale: 1.04,
-                    }}
+                    <motion.button
+                        whileHover={{
+                        scale: 1.04,
+                        }}
+                        whileTap={{
+                        scale: .97,
+                        }}
+                        onClick={() => navigate("/interview/resume")}
+                        className="
+                        rounded-2xl
+                        bg-white
+                        px-10
+                        py-5
+                        text-lg
+                        font-semibold
+                        text-black
+                        shadow-xl
+                        "
+                    >
+                        Start Interview →
+                    </motion.button>
 
-                    whileTap={{
-                      scale: .97,
-                    }}
-
-                    onClick={() => navigate("/interview/resume")}
-
-                    className="
-                    w-full
-                    lg:w-auto
-                    rounded-2xl
-                    bg-white
-                    px-10
-                    py-5
-                    text-lg
-                    font-semibold
-                    text-black
-                    shadow-xl
-                    "
-                  >
-
-                    Start Interview →
-
-                  </motion.button>
-
-                </div>
+                    </div>
 
               </div>
 

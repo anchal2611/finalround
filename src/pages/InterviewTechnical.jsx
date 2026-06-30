@@ -5,7 +5,7 @@ import DashboardNavbar from "../components/dashboard/Navbar";
 import SplashCursor from "../components/SplashCursor";
 
 
-export default function InterviewResume() {
+export default function InterviewTechnical() {
   const navigate = useNavigate();
 
   return (
@@ -23,7 +23,6 @@ export default function InterviewResume() {
             RAINBOW_MODE
             COLOR="#8B5CF6"
         />
-
       <DashboardNavbar />
 
       <main className="max-w-5xl mx-auto px-6 pt-36 pb-20">
@@ -41,18 +40,17 @@ export default function InterviewResume() {
             <div>
 
               <p className="text-violet-400 font-medium">
-                Stage 1 of 3
+                Stage 2 of 3
               </p>
 
               <h1 className="text-5xl font-bold mt-3">
-                Resume Discussion
+                Technical Round
               </h1>
 
               <p className="text-zinc-400 mt-4 max-w-xl">
-                Let's begin by understanding your
-                background, projects and experience.
-                Answer naturally as if you're talking
-                to a real interviewer.
+                This round evaluates your technical
+                knowledge based on your resume,
+                target role and previous answers.
               </p>
 
             </div>
@@ -69,7 +67,7 @@ export default function InterviewResume() {
                 hover:bg-white/10
               "
             >
-              Exit Interview
+              ← Exit Interview
             </button>
 
           </div>
@@ -78,32 +76,32 @@ export default function InterviewResume() {
 
         {/* Progress */}
 
-<div className="mt-12">
+        <div className="mt-12">
 
-  <div className="flex justify-between text-sm text-zinc-500 mb-3">
+          <div className="flex justify-between text-sm text-zinc-500 mb-3">
 
-    <span>Interview Progress</span>
+            <span>Interview Progress</span>
 
-    <span>20%</span>
+            <span>60%</span>
 
-  </div>
+          </div>
 
-  <div className="h-3 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-3 rounded-full bg-white/5 overflow-hidden">
 
-    <div
-      className="
-        h-full
-        rounded-full
-        bg-gradient-to-r
-        from-violet-500
-        to-cyan-400
-        w-[20%]
-      "
-    />
+            <div
+              className="
+                h-full
+                rounded-full
+                bg-gradient-to-r
+                from-violet-500
+                to-cyan-400
+                w-[60%]
+              "
+            />
 
-  </div>
+          </div>
 
-</div>
+        </div>
 
         {/* Question Card */}
 
@@ -143,12 +141,24 @@ export default function InterviewResume() {
 
               <div>
 
-                <p className="text-zinc-500">
-                  Question 1 of 5
+                <div className="flex gap-3">
+
+                  <span className="rounded-full bg-violet-500/10 px-3 py-1 text-sm text-violet-300">
+                    React
+                  </span>
+
+                  <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-sm text-cyan-300">
+                    Medium
+                  </span>
+
+                </div>
+
+                <p className="text-zinc-500 mt-5">
+                  Question 4 of 10
                 </p>
 
                 <h2 className="text-3xl font-bold mt-3">
-                  Tell me about yourself.
+                  Explain React's Virtual DOM and how it improves performance.
                 </h2>
 
               </div>
@@ -165,142 +175,43 @@ export default function InterviewResume() {
                   text-2xl
                 "
               >
-                🎤
+                💻
               </div>
 
             </div>
 
-            <div
+            {/* Answer */}
+
+            <div className="mt-10">
+
+              <h4 className="font-semibold text-lg">
+                Your Answer
+              </h4>
+
+              <textarea
+                rows={8}
+                placeholder="Type your answer here or use voice input..."
                 className="
-                    mt-10
-                    rounded-[28px]
-                    border
-                    border-white/10
-                    bg-white/[0.03]
-                    p-8
+                  mt-4
+                  w-full
+                  rounded-2xl
+                  border
+                  border-white/10
+                  bg-black/30
+                  p-5
+                  outline-none
+                  resize-none
                 "
-                >
+              />
 
-  {/* AI Status */}
+            </div>
 
-  <div className="flex items-center justify-between">
-
-    <div>
-
-      <p className="text-zinc-500 text-sm">
-        AI Interviewer
-      </p>
-
-      <h3 className="mt-2 text-xl font-semibold">
-        Listening for your response...
-      </h3>
-
-    </div>
-
-    <div
-      className="
-        flex
-        items-center
-        gap-3
-      "
-    >
-
-      <span className="text-zinc-500">
-        00:00
-      </span>
-
-      <div
-        className="
-          h-3
-          w-3
-          rounded-full
-          bg-red-500
-          animate-pulse
-        "
-      />
-
-    </div>
-
-  </div>
-
-  {/* Microphone */}
-
-  <div className="flex justify-center mt-10">
-
-    <div
-      className="
-        relative
-        h-28
-        w-28
-        rounded-full
-        bg-gradient-to-br
-        from-violet-500
-        to-cyan-500
-        flex
-        items-center
-        justify-center
-        shadow-[0_0_60px_rgba(168,85,247,.35)]
-      "
-    >
-
-      <span className="text-5xl">
-        🎤
-      </span>
-
-      <div
-        className="
-          absolute
-          inset-0
-          rounded-full
-          border
-          border-violet-400/30
-          animate-ping
-        "
-      />
-
-    </div>
-
-  </div>
-
-  <p className="text-center text-zinc-500 mt-5">
-    Press Start Recording to answer naturally.
-  </p>
-
-  {/* Transcript */}
-
-  <div className="mt-10">
-
-    <h4 className="font-semibold text-lg">
-      Live Transcript
-    </h4>
-
-    <div
-      className="
-        mt-4
-        rounded-2xl
-        border
-        border-dashed
-        border-white/10
-        bg-black/30
-        p-6
-        min-h-[120px]
-      "
-    >
-
-      <p className="text-zinc-500 leading-8">
-        Your spoken answer will appear here in real-time...
-      </p>
-
-    </div>
-
-  </div>
-
-</div>
+            {/* Navigation */}
 
             <div className="flex justify-between mt-10">
 
               <button
-                onClick={() => navigate("/interview/setup")}
+                onClick={() => navigate("/interview/resume")}
                 className="
                     px-6
                     py-3
@@ -312,22 +223,22 @@ export default function InterviewResume() {
                     transition
                 "
                 >
-                ← Back
+                ← Resume Round
                 </button>
 
               <button
-                onClick={() => navigate("/interview/technical")}
+                onClick={() => navigate("/interview/hr")}
                 className="
-                    px-8
-                    py-3
-                    rounded-2xl
-                    bg-white
-                    text-black
-                    font-medium
+                  px-8
+                  py-3
+                  rounded-2xl
+                  bg-white
+                  text-black
+                  font-medium
                 "
-                >
-                Continue to Technical →
-                </button>
+              >
+                Next →
+              </button>
 
             </div>
 

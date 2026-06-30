@@ -1,33 +1,37 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function DashboardNavbar() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [active, setActive] = useState("Dashboard");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems = [
-    {
-      name: "Dashboard",
-      href: "#",
-    },
-    {
-      name: "Interviews",
-      href: "#",
-    },
-    {
-      name: "Analytics",
-      href: "#",
-    },
-    {
-      name: "Resume",
-      href: "#",
-    },
-  ];
+  {
+    name: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    name: "Interviews",
+    path: "/interview/setup",
+  },
+  {
+    name: "Analytics",
+    path: "/analytics",
+  },
+  {
+    name: "Resume",
+    path: "/dashboard/resume",
+  },
+];
 
   return (
     <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
@@ -60,50 +64,63 @@ export default function DashboardNavbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2 relative">
-            {navItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => setActive(item.name)}
-                className="
-                  relative
-                  px-5
-                  py-2
-                  rounded-full
-                  text-sm
-                  font-medium
-                "
-              >
-                {active === item.name && (
-                  <motion.div
-                    layoutId="dashboard-pill"
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 35,
-                    }}
-                    className="
-                      absolute
-                      inset-0
-                      rounded-full
-                      bg-white
-                    "
-                  />
-                )}
+            {navItems.map((item) => {
 
-                <span
-                  className={`
-                    relative z-10 transition-colors
-                    ${
-                      active === item.name
-                        ? "text-black"
-                        : "text-zinc-400 hover:text-white"
-                    }
-                  `}
-                >
-                  {item.name}
-                </span>
-              </button>
-            ))}
+  const active =
+    item.name === "Dashboard"
+      ? location.pathname === "/dashboard"
+      : item.name === "Interviews"
+      ? location.pathname.startsWith("/interview")
+      : item.name === "Resume"
+      ? location.pathname.startsWith("/dashboard/resume")
+      : false;
+
+  return (
+    <button
+      key={item.name}
+      onClick={() => navigate(item.path)}
+      className="
+        relative
+        px-5
+        py-2
+        rounded-full
+        text-sm
+        font-medium
+      "
+    >
+      {active && (
+        <motion.div
+          layoutId="dashboard-pill"
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 35,
+          }}
+          className="
+            absolute
+            inset-0
+            rounded-full
+            bg-white
+          "
+        />
+      )}
+
+      <span
+        className={`
+          relative z-10 transition-colors
+          ${
+            active
+              ? "text-black"
+              : "text-zinc-400 hover:text-white"
+          }
+        `}
+      >
+        {item.name}
+      </span>
+    </button>
+  );
+
+})}
           </div>
 
           {/* Right Side */}
