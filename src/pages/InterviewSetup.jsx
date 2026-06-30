@@ -475,15 +475,17 @@ export default function InterviewSetup() {
               "
             >
 
-              <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10">
+                <div className="max-w-xl">
 
-                <div>
+                  <h3 className="text-4xl font-bold leading-tight">
+                    Ready to{" "}
+                    <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+                        begin?
+                    </span>
+                    </h3>
 
-                  <h3 className="text-3xl font-bold">
-                    Ready to begin?
-                  </h3>
-
-                  <p className="mt-3 text-zinc-400">
+                  <p className="mt-4 text-lg leading-8 text-zinc-400">
                     Your interview will take approximately
                     <span className="text-white font-medium">
                       {" "}20–25 minutes
@@ -491,38 +493,32 @@ export default function InterviewSetup() {
                     {" "}and includes adaptive AI questioning based on your responses.
                   </p>
 
-                  <div className="flex flex-wrap gap-3 mt-6">
-
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">
-                      🎤 Voice Interview
-                    </div>
-
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">
-                      📄 Resume Aware
-                    </div>
-
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">
-                      🧠 AI Feedback
-                    </div>
-
-                  </div>
-
+                  
                 </div>
 
-                <div className="flex lg:justify-end gap-4">
+                <div
+                    className="
+                        flex
+                        items-end
+                        justify-start
+                        lg:justify-end
+                        gap-5
+                        shrink-0
+                    "
+                    >
 
                     <button
                         onClick={() => navigate("/dashboard")}
                         className="
-                        rounded-2xl
-                        border
-                        border-white/10
-                        bg-white/5
-                        px-8
-                        py-4
-                        hover:bg-white/10
-                        transition
-                        "
+                            h-16
+                            px-10
+                            rounded-3xl
+                            border
+                            border-white/10
+                            bg-white/5
+                            hover:bg-white/10
+                            transition
+                            "
                     >
                         Dashboard
                     </button>
@@ -536,14 +532,17 @@ export default function InterviewSetup() {
                         }}
                         onClick={() => navigate("/interview/resume")}
                         className="
-                        rounded-2xl
-                        bg-white
-                        px-10
-                        py-5
-                        text-lg
+                        h-16
+                        px-12
+                        rounded-3xl
                         font-semibold
-                        text-black
-                        shadow-xl
+                        text-lg
+                        bg-gradient-to-r
+                        from-violet-500
+                        to-cyan-500
+                        text-white
+                        shadow-[0_10px_40px_rgba(168,85,247,.35)]
+                        transition
                         "
                     >
                         Start Interview
