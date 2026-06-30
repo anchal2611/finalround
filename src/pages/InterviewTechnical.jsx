@@ -67,7 +67,7 @@ export default function InterviewTechnical() {
                 hover:bg-white/10
               "
             >
-              ← Exit Interview
+              Exit Interview
             </button>
 
           </div>

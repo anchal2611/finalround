@@ -68,7 +68,7 @@ export default function InterviewHR() {
                 hover:bg-white/10
               "
             >
-              ← Exit Interview
+              Exit Interview
             </button>
 
           </div>
@@ -225,7 +225,7 @@ export default function InterviewHR() {
                   transition
                 "
               >
-                ← Technical Round
+                Technical Round
               </button>
 
               <button
@@ -239,7 +239,7 @@ export default function InterviewHR() {
                   font-medium
                 "
               >
-                View Results →
+                View Results
               </button>
 
             </div>
