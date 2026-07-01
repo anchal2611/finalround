@@ -79,13 +79,16 @@ export default function InterviewSetup() {
 
         const session = await startInterview({
 
-            uid: user.uid,
-
             role,
 
             experience,
 
-            difficulty
+            difficulty,
+
+            resumeSummary:
+              resumeData?.summary ||
+              resumeData?.resumeSummary ||
+            "",
 
         });
 

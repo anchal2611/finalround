@@ -2,44 +2,44 @@ const START_INTERVIEW_API = import.meta.env.VITE_INTERVIEW_API;
 const EVALUATE_INTERVIEW_API = import.meta.env.VITE_EVALUATE_API;
 
 export async function startInterview({
-  uid,
   role,
   experience,
   difficulty,
+  resumeSummary = "",
 }) {
   try {
-    const response = await fetch(
-      START_INTERVIEW_API,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          uid,
-          role,
-          experience,
-          difficulty,
-        }),
-      }
-    );
+    const response = await fetch(START_INTERVIEW_API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        role,
+        experience,
+        difficulty,
+        resumeSummary,
+      }),
+    });
 
-    const data = await response.json();
+    const text = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(text);
+    }
 
     if (!response.ok) {
       throw new Error(
-        data.message ||
-          "Failed to generate interview."
+        data.message || "Failed to start interview."
       );
     }
 
     return data;
   } catch (error) {
-    console.error(
-      "Start Interview Error:",
-      error
-    );
-
+    console.error("Start Interview Error:", error);
     throw error;
   }
 }
@@ -52,41 +52,39 @@ export async function evaluateAnswer({
   previousResponses = [],
 }) {
   try {
-    const response = await fetch(
-      EVALUATE_INTERVIEW_API,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question,
-          transcript,
-          stage,
-          confidenceAnalysis,
-          previousResponses,
-        }),
-      }
-    );
+    const response = await fetch(EVALUATE_INTERVIEW_API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question,
+        transcript,
+        stage,
+        confidenceAnalysis,
+        previousResponses,
+      }),
+    });
 
     const text = await response.text();
-    
-    console.log(text);
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(text);
+    }
 
     if (!response.ok) {
       throw new Error(
-        data.message ||
-          "Failed to evaluate answer."
+        data.message || "Failed to evaluate answer."
       );
     }
 
     return data;
   } catch (error) {
-    console.error(
-      "Evaluate Answer Error:",
-      error
-    );
-
+    console.error("Evaluate Answer Error:", error);
     throw error;
   }
 }
