@@ -4,7 +4,7 @@ import SplashCursor from "../components/SplashCursor";
 import DashboardNavbar from "../components/dashboard/Navbar";
 
 import InterviewHeader from "../components/interview/InterviewHeader";
-import InterviewProgress from "../components/interview/InterviewProgress";
+import InterviewProgress from "../components/interview/ProgressBar";
 import QuestionNavigator from "../components/interview/QuestionNavigator";
 import QuestionCard from "../components/interview/QuestionCard";
 import RecordingPanel from "../components/interview/RecordingPanel";
