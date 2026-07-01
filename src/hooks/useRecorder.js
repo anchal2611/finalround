@@ -8,14 +8,17 @@ export default function useRecorder() {
   const [timer, setTimer] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioURL, setAudioURL] = useState("");
+  const [stableTranscript, setStableTranscript] = useState("");
 
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
   const timerRef = useRef(null);
+  const restartTimeoutRef = useRef(null);
 
   const {
     transcript,
+    listening,
     resetTranscript,
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
@@ -30,6 +33,54 @@ export default function useRecorder() {
     return () => clearInterval(timerRef.current);
   }, [isRecording]);
 
+  useEffect(() => {
+    const current = transcript.trim();
+
+    if (!current) return;
+
+    const timer = window.setTimeout(() => {
+      setStableTranscript((previous) => {
+        if (!previous) return current;
+
+        if (current.startsWith(previous)) {
+          return current;
+        }
+
+        if (previous.includes(current)) {
+          return previous;
+        }
+
+        return `${previous} ${current}`.trim();
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [transcript]);
+
+  useEffect(() => {
+    if (
+      !isRecording ||
+      !browserSupportsSpeechRecognition ||
+      listening
+    ) {
+      return;
+    }
+
+    restartTimeoutRef.current = window.setTimeout(() => {
+      SpeechRecognition.startListening({
+        continuous: true,
+        interimResults: true,
+        language: "en-IN",
+      });
+    }, 250);
+
+    return () => window.clearTimeout(restartTimeoutRef.current);
+  }, [
+    browserSupportsSpeechRecognition,
+    isRecording,
+    listening,
+  ]);
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -42,7 +93,11 @@ export default function useRecorder() {
       resetRecorder();
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
       });
 
       streamRef.current = stream;
@@ -72,10 +127,11 @@ export default function useRecorder() {
 
       SpeechRecognition.startListening({
         continuous: true,
+        interimResults: true,
         language: "en-IN",
       });
 
-      recorder.start();
+      recorder.start(1000);
 
       setIsRecording(true);
     } catch (err) {
@@ -89,6 +145,7 @@ export default function useRecorder() {
     SpeechRecognition.stopListening();
 
     clearInterval(timerRef.current);
+    clearTimeout(restartTimeoutRef.current);
 
     mediaRecorderRef.current?.stop();
 
@@ -101,6 +158,7 @@ export default function useRecorder() {
     SpeechRecognition.stopListening();
 
     resetTranscript();
+    setStableTranscript("");
 
     if (audioURL) {
       URL.revokeObjectURL(audioURL);
@@ -119,6 +177,7 @@ export default function useRecorder() {
   useEffect(() => {
     return () => {
       clearInterval(timerRef.current);
+      clearTimeout(restartTimeoutRef.current);
 
       SpeechRecognition.stopListening();
 
@@ -133,7 +192,7 @@ export default function useRecorder() {
   return {
     isRecording,
     timer,
-    transcript,
+    transcript: stableTranscript || transcript,
     audioBlob,
     audioURL,
     browserSupportsSpeechRecognition,

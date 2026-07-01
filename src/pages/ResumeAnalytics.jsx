@@ -46,6 +46,33 @@ function statusClasses(status) {
   return "border-white/10 bg-white/10 text-zinc-300";
 }
 
+function scoreTheme(score = 0) {
+  if (score >= 80) {
+    return {
+      border: "border-green-500/25",
+      bg: "bg-green-500/10",
+      text: "text-green-300",
+      bar: "from-green-500 to-emerald-300",
+    };
+  }
+
+  if (score >= 60) {
+    return {
+      border: "border-yellow-500/25",
+      bg: "bg-yellow-500/10",
+      text: "text-yellow-300",
+      bar: "from-yellow-500 to-amber-300",
+    };
+  }
+
+  return {
+    border: "border-red-500/25",
+    bg: "bg-red-500/10",
+    text: "text-red-300",
+    bar: "from-red-500 to-rose-300",
+  };
+}
+
 function normalizeCategoryName(category) {
   if (category === "Keyword Relevance") return "Keywords";
   return category;
@@ -142,6 +169,7 @@ export default function ResumeAnalytics() {
   } = useResumeAnalysis(user);
 
   const categories = buildCategoryScores(resume.categoryScores);
+  const atsTheme = scoreTheme(resume.atsScore);
 
   const handleViewOriginal = async () => {
     try {
@@ -219,12 +247,12 @@ export default function ResumeAnalytics() {
         <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl">
           <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-violet-500/10 blur-[120px]" />
 
-          <div className="relative z-10 grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
-            <div>
+          <div className="relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-cyan-300">
                 Resume Overview
               </p>
-              <h1 className="mt-3 break-words text-4xl font-bold md:text-5xl">
+              <h1 className="mt-3 break-all text-3xl font-bold leading-tight md:text-5xl">
                 {resume.resumeName}
               </h1>
               <p className="mt-4 max-w-3xl leading-7 text-zinc-400">
@@ -232,8 +260,8 @@ export default function ResumeAnalytics() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/10 p-7 text-center">
-              <p className="text-6xl font-bold text-cyan-200">
+            <div className={`rounded-3xl border p-7 text-center ${atsTheme.border} ${atsTheme.bg}`}>
+              <p className={`text-6xl font-bold ${atsTheme.text}`}>
                 {resume.atsScore || 0}
               </p>
               <p className="mt-2 text-sm text-zinc-400">
@@ -248,7 +276,13 @@ export default function ResumeAnalytics() {
           <InfoTile
             label="Resume Status"
             value={resume.verdict || "Analysis Ready"}
-            accent="text-cyan-200"
+            accent={statusClasses(resume.verdict).includes("green")
+              ? "text-green-300"
+              : statusClasses(resume.verdict).includes("yellow")
+                ? "text-yellow-300"
+                : statusClasses(resume.verdict).includes("red")
+                  ? "text-red-300"
+                  : "text-zinc-300"}
           />
           <InfoTile label="Last Updated" value={formatDate(resume.lastUpdatedAt)} />
           <InfoTile label="Resume Score" value={`${resume.score || 0}/100`} />
@@ -278,7 +312,7 @@ export default function ResumeAnalytics() {
                 Category-wise breakdown of the resume analysis.
               </p>
             </div>
-            <p className="text-4xl font-bold text-cyan-300">
+            <p className={`text-4xl font-bold ${atsTheme.text}`}>
               {resume.atsScore || 0}/100
             </p>
           </div>
@@ -286,11 +320,12 @@ export default function ResumeAnalytics() {
           <div className="mt-8 grid gap-5 lg:grid-cols-2">
             {categories.map((item) => {
               const percent = scorePercent(item);
+              const theme = scoreTheme(percent);
 
               return (
                 <div
                   key={item.category}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5"
+                  className={`rounded-2xl border bg-white/5 p-5 ${theme.border}`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <span className="font-medium">
@@ -303,7 +338,7 @@ export default function ResumeAnalytics() {
 
                   <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400"
+                      className={`h-full rounded-full bg-gradient-to-r ${theme.bar}`}
                       style={{ width: `${percent}%` }}
                     />
                   </div>

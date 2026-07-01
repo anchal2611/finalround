@@ -1,5 +1,8 @@
-const START_INTERVIEW_API = import.meta.env.VITE_INTERVIEW_API;
-const EVALUATE_INTERVIEW_API = import.meta.env.VITE_EVALUATE_API;
+const START_INTERVIEW_API =
+  import.meta.env.VITE_INTERVIEW_API || "/api/interview/start";
+
+const EVALUATE_INTERVIEW_API =
+  import.meta.env.VITE_EVALUATE_API || "/api/interview/evaluate";
 
 export async function startInterview({
   role,
@@ -52,6 +55,12 @@ export async function evaluateAnswer({
   previousResponses = [],
 }) {
   try {
+    if (!transcript?.trim()) {
+      throw new Error(
+        "No transcript was captured. Please record your answer again."
+      );
+    }
+
     const response = await fetch(EVALUATE_INTERVIEW_API, {
       method: "POST",
       headers: {

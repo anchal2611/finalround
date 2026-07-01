@@ -172,6 +172,7 @@ export default function InterviewTechnical() {
             setShowAnalysis(false);
 
             alert(
+                error.message ||
                 "Unable to evaluate your answer. Please try again."
             );
 

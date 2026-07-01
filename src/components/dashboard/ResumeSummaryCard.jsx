@@ -29,6 +29,18 @@ function statusClasses(status) {
   return "bg-white/10 text-zinc-300 border-white/10";
 }
 
+function scoreClasses(score = 0) {
+  if (score >= 80) {
+    return "border-green-500/25 bg-green-500/10 text-green-300";
+  }
+
+  if (score >= 60) {
+    return "border-yellow-500/25 bg-yellow-500/10 text-yellow-300";
+  }
+
+  return "border-red-500/25 bg-red-500/10 text-red-300";
+}
+
 export default function ResumeSummaryCard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -63,11 +75,11 @@ export default function ResumeSummaryCard() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-5 py-3 text-center">
-            <p className="text-3xl font-bold text-cyan-300">
+          <div className={`rounded-2xl border px-5 py-3 text-center ${scoreClasses(resume.atsScore)}`}>
+            <p className="text-3xl font-bold">
               {resume.atsScore || 0}
             </p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-400">
               ATS Score
             </p>
           </div>
@@ -99,11 +111,11 @@ export default function ResumeSummaryCard() {
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-white/5 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
                 Resume Name
               </p>
-              <h4 className="mt-2 break-words text-lg font-semibold">
+              <h4 className="mt-2 break-all text-lg font-semibold leading-7">
                 {resume.resumeName}
               </h4>
             </div>

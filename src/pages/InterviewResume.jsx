@@ -172,6 +172,7 @@ export default function InterviewResume() {
             setShowAnalysis(false);
 
             alert(
+                error.message ||
                 "Unable to evaluate your answer. Please try again."
             );
 

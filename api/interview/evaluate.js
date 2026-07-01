@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+/* global process */
+
 const genAI = new GoogleGenerativeAI(
     process.env.GEMINI_INTERVIEW_API_KEY
 );
@@ -126,7 +128,21 @@ Do not wrap the JSON inside markdown.
             .replace(/```/g, "")
             .trim();
 
-        const evaluation = JSON.parse(text);
+        const start = text.indexOf("{");
+        const end = text.lastIndexOf("}");
+
+        if (
+            start === -1 ||
+            end === -1
+        ) {
+            throw new Error(
+                "Gemini returned invalid evaluation JSON."
+            );
+        }
+
+        const evaluation = JSON.parse(
+            text.slice(start, end + 1)
+        );
 
         return res.status(200).json({
 
