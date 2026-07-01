@@ -6,7 +6,6 @@ import SpeechRecognition, {
 } from "react-speech-recognition";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
-import SplashCursor from "../components/SplashCursor";
 
 
 export default function InterviewResume() {
@@ -143,19 +142,6 @@ export default function InterviewResume() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
-
-        <SplashCursor
-            DENSITY_DISSIPATION={4}
-            VELOCITY_DISSIPATION={2.2}
-            PRESSURE={0.08}
-            CURL={2}
-            SPLAT_RADIUS={0.12}
-            SPLAT_FORCE={3500}
-            COLOR_UPDATE_SPEED={8}
-            SHADING
-            RAINBOW_MODE
-            COLOR="#8B5CF6"
-        />
 
       <DashboardNavbar />
 

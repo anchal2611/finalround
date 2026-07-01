@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
-import SplashCursor from "../components/SplashCursor";
 
 import {
   FaBriefcase,
@@ -130,19 +129,6 @@ export default function InterviewSetup() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
-
-      <SplashCursor
-        DENSITY_DISSIPATION={4}
-        VELOCITY_DISSIPATION={3}
-        PRESSURE={0.05}
-        CURL={2}
-        SPLAT_RADIUS={0.15}
-        SPLAT_FORCE={3000}
-        COLOR_UPDATE_SPEED={5}
-        SHADING={false}
-        RAINBOW_MODE
-        COLOR="#A855F7"
-      />
 
       <DashboardNavbar />
 
