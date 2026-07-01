@@ -15,6 +15,7 @@ import InterviewHR from "../pages/InterviewHR";
 import InterviewResults from "../pages/InterviewResults";
 
 import ProtectedRoute from "../components/ProtectedRoutes";
+import InterviewProtectedRoute from "../components/InterviewProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -66,7 +67,9 @@ export default function AppRoutes() {
           path="/interview/resume"
           element={
             <ProtectedRoute>
-              <InterviewResume />
+              <InterviewProtectedRoute requiredStage="resume">
+                <InterviewResume />
+              </InterviewProtectedRoute>
             </ProtectedRoute>
           }
         />
@@ -77,7 +80,9 @@ export default function AppRoutes() {
           path="/interview/technical"
           element={
             <ProtectedRoute>
-              <InterviewTechnical />
+              <InterviewProtectedRoute requiredStage="technical">
+                <InterviewTechnical />
+              </InterviewProtectedRoute>
             </ProtectedRoute>
           }
         />
@@ -88,7 +93,9 @@ export default function AppRoutes() {
           path="/interview/hr"
           element={
             <ProtectedRoute>
-              <InterviewHR />
+              <InterviewProtectedRoute requiredStage="hr">
+                <InterviewHR />
+              </InterviewProtectedRoute>
             </ProtectedRoute>
           }
         />
@@ -99,7 +106,9 @@ export default function AppRoutes() {
           path="/interview/results"
           element={
             <ProtectedRoute>
-              <InterviewResults />
+              <InterviewProtectedRoute requiredStage="completed">
+                <InterviewResults />
+              </InterviewProtectedRoute>
             </ProtectedRoute>
           }
         />

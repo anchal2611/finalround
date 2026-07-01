@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { startInterview } from "../services/interview";
+import { useAuth } from "../context/AuthContext";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
 
@@ -16,6 +18,7 @@ import SpeechRecognition, {
 
 export default function InterviewSetup() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [role, setRole] = useState("");
 
@@ -41,6 +44,8 @@ export default function InterviewSetup() {
 
   const [permissionError, setPermissionError] = useState("");
 
+  const [startingInterview,setStartingInterview]=useState(false);
+
   const {
 
     transcript,
@@ -59,6 +64,52 @@ export default function InterviewSetup() {
         );
 
     }, [browserSupportsSpeechRecognition]);
+
+  
+
+  const handleStartInterview = async () => {
+    if (!role.trim()) {
+        alert("Please enter a target role.");
+        return;
+    }
+
+    try {
+
+        setStartingInterview(true);
+
+        const session = await startInterview({
+
+            uid: user.uid,
+
+            role,
+
+            experience,
+
+            difficulty
+
+        });
+
+        navigate("/interview/resume", {
+            state: {
+                session
+            }
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            error.message ||
+            "Unable to generate interview."
+        );
+
+    } finally {
+
+        setStartingInterview(false);
+
+    }
+  };
 
   const checkMicrophone = async () => {
 
@@ -760,62 +811,43 @@ export default function InterviewSetup() {
                     </button>
 
                     <motion.button
-                        whileHover={{
-                        scale: 1.04,
-                        }}
-                        whileTap={{
-                        scale: .97,
-                        }}
-                        onClick={() =>
-                          navigate(
-                              "/interview/resume",
-                              {
-                                  state: {
-
-                                      role,
-
-                                      experience,
-
-                                      difficulty,
-
-                                      micDevice
-
-                                  }
-                              }
-                          )
-                      }
-
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: .97 }}
+                      onClick={handleStartInterview}
                       disabled={
+                          !role.trim() ||
                           !micPermission ||
                           !browserSupported ||
-                          !micWorking
+                          !micWorking ||
+                          startingInterview
                       }
-                        className={`
-                        h-16
-                        px-12
-                        rounded-3xl
-                        font-semibold
-                        text-lg
-                        transition
+                      className={`
+                          h-16
+                          px-12
+                          rounded-3xl
+                          font-semibold
+                          text-lg
+                          transition
 
-                        ${
-                        micPermission &&
-                        browserSupported &&
-                        micWorking
+                          ${
+                              micPermission &&
+                              browserSupported &&
+                              micWorking
 
-                        ?
+                              ?
 
-                        "bg-gradient-to-r from-violet-500 to-cyan-500"
+                              "bg-gradient-to-r from-violet-500 to-cyan-500"
 
-                        :
+                              :
 
-                        "bg-zinc-700 cursor-not-allowed opacity-50"
-
-                        }
-                        `}
-                    >
-                        Start Interview
-                    </motion.button>
+                              "bg-zinc-700 cursor-not-allowed opacity-50"
+                          }
+                      `}
+                  >
+                      {startingInterview
+                          ? "Generating Interview..."
+                          : "Start Interview"}
+                  </motion.button>
 
                     </div>
 

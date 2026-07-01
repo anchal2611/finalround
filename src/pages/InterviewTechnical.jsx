@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import DashboardNavbar from "../components/dashboard/Navbar";
 
 import InterviewHeader from "../components/interview/InterviewHeader";
@@ -13,160 +14,256 @@ import SummaryModal from "../components/interview/SummaryModal";
 
 import useRecorder from "../hooks/useRecorder";
 
+import { analyzeConfidence } from "../services/confidence";
+import { evaluateAnswer } from "../services/interview";
+
+import { useInterview } from "../context/InterviewContext";
+
 export default function InterviewTechnical() {
 
-  const navigate = useNavigate();
-  const recorder = useRecorder();
+    const navigate = useNavigate();
 
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [analysisStep, setAnalysisStep] = useState(0);
+    const recorder = useRecorder();
 
-  const questions = [
-    {
-      id: 1,
-      question: "Explain your most technically challenging project.",
-      time: "3-4 min",
-    },
-    {
-      id: 2,
-      question: "Describe a difficult bug you solved and how you approached it.",
-      time: "3 min",
-    },
-    {
-      id: 3,
-      question: "Why did you choose your project's tech stack?",
-      time: "2-3 min",
-    },
-    {
-      id: 4,
-      question: "If you rebuilt your project today, what would you improve?",
-      time: "3 min",
-    },
-    {
-      id: 5,
-      question: "Explain one AWS service or technology you are comfortable with.",
-      time: "2 min",
-    },
-  ];
+    const {
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+        session,
 
-  const stageProgress = 40;
-  const questionProgress =
-    ((currentQuestion + 1) / questions.length) * 20;
+        currentQuestion,
 
-  const progress = Math.round(stageProgress + questionProgress);
+        setCurrentQuestion,
 
-  const handleBack = () => {
-    navigate("/interview/resume");
-  };
+        currentStage,
 
-  const handleNext = () => {
+        setCurrentStage,
 
-    if (!recorder.audioBlob) return;
+        responses,
 
-    if (recorder.isRecording) {
-      recorder.stopRecording();
+        addResponse
+
+    } = useInterview();
+
+    const [showAnalysis, setShowAnalysis] = useState(false);
+
+    const [analysisStep, setAnalysisStep] = useState(0);
+
+    if (!session) {
+
+        return null;
+
     }
 
-    setShowAnalysis(true);
-    setAnalysisStep(0);
+    const questions = session.questions.technical;
 
-    setTimeout(() => setAnalysisStep(1), 700);
-    setTimeout(() => setAnalysisStep(2), 1500);
-    setTimeout(() => setAnalysisStep(3), 2300);
+    const progress = Math.round(
 
-    setTimeout(() => {
+        ((currentQuestion + 1) / questions.length) * 100
 
-      setShowAnalysis(false);
+    );
 
-      if (currentQuestion < questions.length - 1) {
+    const handleBack = () => {
 
-        recorder.resetRecorder();
+        navigate("/interview/resume");
 
-        setCurrentQuestion(prev => prev + 1);
+    };
 
-      } else {
+    const handleNext = async () => {
 
-        recorder.resetRecorder();
+        if (!recorder.audioBlob) return;
 
-        navigate("/interview/hr");
+        try {
 
-      }
+            setShowAnalysis(true);
 
-    }, 3200);
+            setAnalysisStep(0);
 
-  };
+            const confidenceAnalysis =
+                await analyzeConfidence(
+                    recorder.audioBlob
+                );
 
-  return (
+            setAnalysisStep(1);
 
-    <div className="min-h-screen bg-black text-white">
+            const evaluation =
+                await evaluateAnswer({
 
-      <DashboardNavbar />
+                    question:
+                        questions[currentQuestion].question,
 
-      <SummaryModal
-        open={showAnalysis}
-        currentStep={analysisStep}
-      />
+                    transcript:
+                        recorder.transcript,
 
-      <main className="mx-auto max-w-6xl px-6 pt-36 pb-20">
+                    stage:
+                        currentStage,
 
-        <InterviewHeader
-          stage={2}
-          title="Technical Interview"
-          description="This round evaluates your technical knowledge, problem-solving ability and implementation skills. Explain your thought process clearly."
-        />
+                    confidenceAnalysis,
 
-        <InterviewProgress
-          progress={progress}
-          stage={2}
-          currentQuestion={currentQuestion + 1}
-          totalQuestions={questions.length}
-        />
+                    previousResponses:
+                        responses
 
-        <QuestionNavigator
-          currentQuestion={currentQuestion + 1}
-          totalQuestions={questions.length}
-        />
+                });
 
-        <QuestionCard
-          currentQuestion={currentQuestion + 1}
-          totalQuestions={questions.length}
-          question={questions[currentQuestion].question}
-          estimatedTime={questions[currentQuestion].time}
-        />
+            setAnalysisStep(2);
 
-        <RecordingPanel
-          isRecording={recorder.isRecording}
-          timer={recorder.timer}
-          formatTime={recorder.formatTime}
-          startRecording={recorder.startRecording}
-          stopRecording={recorder.stopRecording}
-        />
+            addResponse({
 
-        <TranscriptBox
-          transcript={recorder.transcript}
-          audioURL={recorder.audioURL}
-        />
+                questionId:
+                    questions[currentQuestion].id,
 
-        <InterviewControls
-          onBack={handleBack}
-          onNext={handleNext}
-          nextLabel={
-            currentQuestion === questions.length - 1
-              ? "Continue to HR Round"
-              : "Next Question"
-          }
-          disableNext={!recorder.audioBlob}
-          isLastQuestion={
-            currentQuestion === questions.length - 1
-          }
-        />
+                stage:
+                    currentStage,
 
-      </main>
+                question:
+                    questions[currentQuestion].question,
 
-    </div>
+                transcript:
+                    recorder.transcript,
 
-  );
+                audioBlob:
+                    recorder.audioBlob,
+
+                evaluation:
+                    evaluation.evaluation,
+
+                answeredAt:
+                    new Date().toISOString()
+
+            });
+
+            setAnalysisStep(3);
+
+            setTimeout(() => {
+
+                setShowAnalysis(false);
+
+                recorder.resetRecorder();
+
+                if (
+
+                    currentQuestion ===
+                    questions.length - 1
+
+                ) {
+
+                    setCurrentStage(
+                        "hr"
+                    );
+
+                    setCurrentQuestion(0);
+
+                    navigate(
+                        "/interview/hr"
+                    );
+
+                }
+
+                else {
+
+                    setCurrentQuestion(
+                        prev => prev + 1
+                    );
+
+                }
+
+            }, 1200);
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            setShowAnalysis(false);
+
+            alert(
+                "Unable to evaluate your answer. Please try again."
+            );
+
+        }
+
+    };
+
+        return (
+
+        <div className="min-h-screen overflow-x-hidden bg-black text-white">
+
+            <DashboardNavbar />
+
+            <SummaryModal
+                open={showAnalysis}
+                currentStep={analysisStep}
+            />
+
+            <main className="mx-auto max-w-6xl px-6 pt-36 pb-20">
+
+                <InterviewHeader
+                    stage={2}
+                    title="Technical Interview"
+                    description="Demonstrate your technical knowledge by answering the following questions. Explain your thought process clearly, just like in a real technical interview."
+                />
+
+                <InterviewProgress
+                    progress={progress}
+                    stage={2}
+                    currentQuestion={currentQuestion + 1}
+                    totalQuestions={questions.length}
+                />
+
+                <QuestionNavigator
+                    currentQuestion={currentQuestion + 1}
+                    totalQuestions={questions.length}
+                />
+
+                <QuestionCard
+                    currentQuestion={currentQuestion + 1}
+                    totalQuestions={questions.length}
+                    question={
+                        questions[currentQuestion].question
+                    }
+                    estimatedTime={
+                        questions[currentQuestion].time ||
+                        "2-4 min"
+                    }
+                />
+
+                <RecordingPanel
+                    isRecording={recorder.isRecording}
+                    timer={recorder.timer}
+                    formatTime={recorder.formatTime}
+                    startRecording={recorder.startRecording}
+                    stopRecording={recorder.stopRecording}
+                />
+
+                <TranscriptBox
+                    transcript={recorder.transcript}
+                    audioURL={recorder.audioURL}
+                />
+
+                <InterviewControls
+                    onBack={handleBack}
+                    onNext={handleNext}
+                    nextLabel={
+                        currentQuestion ===
+                        questions.length - 1
+
+                            ? "Continue to HR"
+
+                            : "Next Question"
+                    }
+                    disableNext={
+                        !recorder.audioBlob ||
+                        showAnalysis
+                    }
+                    isLastQuestion={
+                        currentQuestion ===
+                        questions.length - 1
+                    }
+                />
+
+            </main>
+
+        </div>
+
+    );
 
 }

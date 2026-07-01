@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import DashboardNavbar from "../components/dashboard/Navbar";
 
 import InterviewHeader from "../components/interview/InterviewHeader";
@@ -13,160 +14,256 @@ import SummaryModal from "../components/interview/SummaryModal";
 
 import useRecorder from "../hooks/useRecorder";
 
+import { analyzeConfidence } from "../services/confidence";
+import { evaluateAnswer } from "../services/interview";
+
+import { useInterview } from "../context/InterviewContext";
+
 export default function InterviewHR() {
 
-  const navigate = useNavigate();
-  const recorder = useRecorder();
+    const navigate = useNavigate();
 
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [analysisStep, setAnalysisStep] = useState(0);
+    const recorder = useRecorder();
 
-  const questions = [
-    {
-      id: 1,
-      question: "Tell me about a time you worked in a team and handled a conflict.",
-      time: "2-3 min",
-    },
-    {
-      id: 2,
-      question: "What are your biggest strengths and weaknesses?",
-      time: "2-3 min",
-    },
-    {
-      id: 3,
-      question: "Describe a situation where you had to learn something quickly.",
-      time: "3 min",
-    },
-    {
-      id: 4,
-      question: "Why do you want to join our company?",
-      time: "2 min",
-    },
-    {
-      id: 5,
-      question: "Do you have any questions for the interviewer?",
-      time: "2 min",
-    },
-  ];
+    const {
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+        session,
 
-  const stageProgress = 80;
-  const questionProgress =
-    ((currentQuestion + 1) / questions.length) * 20;
+        currentQuestion,
 
-  const progress = Math.round(stageProgress + questionProgress);
+        setCurrentQuestion,
 
-  const handleBack = () => {
-    navigate("/interview/technical");
-  };
+        currentStage,
 
-  const handleNext = () => {
+        setCurrentStage,
 
-    if (!recorder.audioBlob) return;
+        responses,
 
-    if (recorder.isRecording) {
-      recorder.stopRecording();
+        addResponse
+
+    } = useInterview();
+
+    const [showAnalysis, setShowAnalysis] = useState(false);
+
+    const [analysisStep, setAnalysisStep] = useState(0);
+
+    if (!session) {
+
+        return null;
+
     }
 
-    setShowAnalysis(true);
-    setAnalysisStep(0);
+    const questions = session.questions.hr;
 
-    setTimeout(() => setAnalysisStep(1), 700);
-    setTimeout(() => setAnalysisStep(2), 1500);
-    setTimeout(() => setAnalysisStep(3), 2300);
+    const progress = Math.round(
 
-    setTimeout(() => {
+        ((currentQuestion + 1) / questions.length) * 100
 
-      setShowAnalysis(false);
+    );
 
-      if (currentQuestion < questions.length - 1) {
+    const handleBack = () => {
 
-        recorder.resetRecorder();
+        navigate("/interview/technical");
 
-        setCurrentQuestion(prev => prev + 1);
+    };
 
-      } else {
+    const handleNext = async () => {
 
-        recorder.resetRecorder();
+        if (!recorder.audioBlob) return;
 
-        navigate("/interview/summary");
+        try {
 
-      }
+            setShowAnalysis(true);
 
-    }, 3200);
+            setAnalysisStep(0);
 
-  };
+            const confidenceAnalysis =
+                await analyzeConfidence(
+                    recorder.audioBlob
+                );
 
-  return (
+            setAnalysisStep(1);
 
-    <div className="min-h-screen bg-black text-white">
+            const evaluation =
+                await evaluateAnswer({
 
-      <DashboardNavbar />
+                    question:
+                        questions[currentQuestion].question,
 
-      <SummaryModal
-        open={showAnalysis}
-        currentStep={analysisStep}
-      />
+                    transcript:
+                        recorder.transcript,
 
-      <main className="mx-auto max-w-6xl px-6 pt-36 pb-20">
+                    stage:
+                        currentStage,
 
-        <InterviewHeader
-          stage={3}
-          title="HR & Behavioral Interview"
-          description="This final round evaluates your communication, teamwork, leadership, adaptability and cultural fit. Answer honestly and confidently."
-        />
+                    confidenceAnalysis,
 
-        <InterviewProgress
-          progress={progress}
-          stage={3}
-          currentQuestion={currentQuestion + 1}
-          totalQuestions={questions.length}
-        />
+                    previousResponses:
+                        responses
 
-        <QuestionNavigator
-          currentQuestion={currentQuestion + 1}
-          totalQuestions={questions.length}
-        />
+                });
 
-        <QuestionCard
-          currentQuestion={currentQuestion + 1}
-          totalQuestions={questions.length}
-          question={questions[currentQuestion].question}
-          estimatedTime={questions[currentQuestion].time}
-        />
+            setAnalysisStep(2);
 
-        <RecordingPanel
-          isRecording={recorder.isRecording}
-          timer={recorder.timer}
-          formatTime={recorder.formatTime}
-          startRecording={recorder.startRecording}
-          stopRecording={recorder.stopRecording}
-        />
+            addResponse({
 
-        <TranscriptBox
-          transcript={recorder.transcript}
-          audioURL={recorder.audioURL}
-        />
+                questionId:
+                    questions[currentQuestion].id,
 
-        <InterviewControls
-          onBack={handleBack}
-          onNext={handleNext}
-          nextLabel={
-            currentQuestion === questions.length - 1
-              ? "Finish Interview"
-              : "Next Question"
-          }
-          disableNext={!recorder.audioBlob}
-          isLastQuestion={
-            currentQuestion === questions.length - 1
-          }
-        />
+                stage:
+                    currentStage,
 
-      </main>
+                question:
+                    questions[currentQuestion].question,
 
-    </div>
+                transcript:
+                    recorder.transcript,
 
-  );
+                audioBlob:
+                    recorder.audioBlob,
+
+                evaluation:
+                    evaluation.evaluation,
+
+                answeredAt:
+                    new Date().toISOString()
+
+            });
+
+            setAnalysisStep(3);
+
+            setTimeout(() => {
+
+                setShowAnalysis(false);
+
+                recorder.resetRecorder();
+
+                if (
+
+                    currentQuestion ===
+                    questions.length - 1
+
+                ) {
+
+                    setCurrentStage(
+                        "completed"
+                    );
+
+                    setCurrentQuestion(0);
+
+                    navigate(
+                        "/interview/results"
+                    );
+
+                }
+
+                else {
+
+                    setCurrentQuestion(
+                        prev => prev + 1
+                    );
+
+                }
+
+            }, 1200);
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            setShowAnalysis(false);
+
+            alert(
+                "Unable to evaluate your answer. Please try again."
+            );
+
+        }
+
+    };
+
+        return (
+
+        <div className="min-h-screen overflow-x-hidden bg-black text-white">
+
+            <DashboardNavbar />
+
+            <SummaryModal
+                open={showAnalysis}
+                currentStep={analysisStep}
+            />
+
+            <main className="mx-auto max-w-6xl px-6 pt-36 pb-20">
+
+                <InterviewHeader
+                    stage={3}
+                    title="HR & Behavioral Interview"
+                    description="This final round focuses on your communication, personality, teamwork and decision-making. Answer honestly and confidently."
+                />
+
+                <InterviewProgress
+                    progress={progress}
+                    stage={3}
+                    currentQuestion={currentQuestion + 1}
+                    totalQuestions={questions.length}
+                />
+
+                <QuestionNavigator
+                    currentQuestion={currentQuestion + 1}
+                    totalQuestions={questions.length}
+                />
+
+                <QuestionCard
+                    currentQuestion={currentQuestion + 1}
+                    totalQuestions={questions.length}
+                    question={
+                        questions[currentQuestion].question
+                    }
+                    estimatedTime={
+                        questions[currentQuestion].time ||
+                        "2-3 min"
+                    }
+                />
+
+                <RecordingPanel
+                    isRecording={recorder.isRecording}
+                    timer={recorder.timer}
+                    formatTime={recorder.formatTime}
+                    startRecording={recorder.startRecording}
+                    stopRecording={recorder.stopRecording}
+                />
+
+                <TranscriptBox
+                    transcript={recorder.transcript}
+                    audioURL={recorder.audioURL}
+                />
+
+                <InterviewControls
+                    onBack={handleBack}
+                    onNext={handleNext}
+                    nextLabel={
+                        currentQuestion ===
+                        questions.length - 1
+
+                            ? "Finish Interview"
+
+                            : "Next Question"
+                    }
+                    disableNext={
+                        !recorder.audioBlob ||
+                        showAnalysis
+                    }
+                    isLastQuestion={
+                        currentQuestion ===
+                        questions.length - 1
+                    }
+                />
+
+            </main>
+
+        </div>
+
+    );
 
 }
