@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { startInterview } from "../services/interview";
 import { useAuth } from "../context/AuthContext";
+import { db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
 
@@ -46,6 +48,52 @@ export default function InterviewSetup() {
 
   const [startingInterview,setStartingInterview]=useState(false);
 
+  const [resumeSummary, setResumeSummary] = useState("");
+
+  useEffect(() => {
+
+    if (!user) return;
+
+    const loadResume = async () => {
+
+        try {
+
+            const snap = await getDoc(
+
+                doc(db, "users", user.uid)
+
+            );
+
+            if (snap.exists()) {
+
+                const data = snap.data();
+
+                setResumeSummary(
+
+                    data.summary ||
+
+                    data.resumeSummary ||
+
+                    ""
+
+                );
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.error(err);
+
+        }
+
+    };
+
+    loadResume();
+
+  }, [user]);
+
   const {
 
     transcript,
@@ -85,10 +133,7 @@ export default function InterviewSetup() {
 
             difficulty,
 
-            resumeSummary:
-              resumeData?.summary ||
-              resumeData?.resumeSummary ||
-            "",
+            resumeSummary: resumeSummary ? resumeSummary : "",
 
         });
 
