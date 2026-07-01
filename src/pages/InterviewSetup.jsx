@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
 import SplashCursor from "../components/SplashCursor";
@@ -42,7 +42,91 @@ export default function InterviewSetup() {
 
   const [permissionError, setPermissionError] = useState("");
 
-  const [transcript, setTranscript] = useState("");
+  const {
+
+    transcript,
+
+    listening,
+
+    resetTranscript,
+
+    browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
+
+    useEffect(() => {
+
+        setBrowserSupported(
+            browserSupportsSpeechRecognition
+        );
+
+    }, [browserSupportsSpeechRecognition]);
+
+  const checkMicrophone = async () => {
+
+    try {
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
+
+        const devices =
+            await navigator.mediaDevices.enumerateDevices();
+
+        const mic = devices.find(
+            d => d.kind === "audioinput"
+        );
+
+        setMicPermission(true);
+
+        setMicDevice(
+            mic?.label || "Default Microphone"
+        );
+
+        stream.getTracks().forEach(track =>
+            track.stop()
+        );
+
+    }
+
+    catch {
+
+        setPermissionError(
+            "Microphone permission denied."
+        );
+
+    }
+  };
+
+  const startMicTest = () => {
+
+    resetTranscript();
+
+    setTestingMic(true);
+
+    SpeechRecognition.startListening({
+
+        continuous: true,
+
+        language: "en-IN"
+
+    });
+  };
+
+  const stopMicTest = () => {
+
+    SpeechRecognition.stopListening();
+
+    setTestingMic(false);
+
+    if (transcript.length > 10) {
+
+        setMicWorking(true);
+
+    }
+
+  };
+
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -481,6 +565,150 @@ export default function InterviewSetup() {
 
             </div>
 
+            {/* System Check */}
+
+            <div className="mt-14 rounded-3xl border border-white/10 bg-white/5 p-8">
+
+              <h3 className="text-2xl font-bold">
+
+                  System Check
+
+              </h3>
+
+              <div className="mt-6 space-y-4">
+
+                  <div className="flex justify-between">
+
+                      <span>Browser Support</span>
+
+                      <span className={browserSupported ? "text-green-400" : "text-red-400"}>
+
+                          {browserSupported ? "✓ Supported" : "✗ Not Supported"}
+
+                      </span>
+
+                  </div>
+
+                  <div className="flex justify-between">
+
+                      <span>Microphone Permission</span>
+
+                      <span className={micPermission ? "text-green-400" : "text-red-400"}>
+
+                          {micPermission ? "✓ Granted" : "✗ Denied"}
+
+                      </span>
+
+                  </div>
+
+                  <div className="flex justify-between">
+
+                      <span>Microphone</span>
+
+                      <span className="text-zinc-300">
+
+                          {micDevice || "Not Detected"}
+
+                      </span>
+
+                  </div>
+
+                  <div className="flex justify-between">
+
+                      <span>Speech Recognition</span>
+
+                      <span className={micWorking ? "text-green-400" : "text-yellow-400"}>
+
+                          {micWorking ? "✓ Working" : "Not Tested"}
+
+                      </span>
+
+                  </div>
+
+              </div>
+
+          </div>
+
+          {/* Microphone Test */}
+
+          <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8">
+
+            <h3 className="text-xl font-semibold">
+
+                Test Microphone
+
+            </h3>
+
+            <p className="text-zinc-400 mt-2">
+
+                Speak for a few seconds to verify speech recognition.
+
+            </p>
+
+            <div className="flex gap-4 mt-6">
+
+                <button
+
+                    onClick={startMicTest}
+
+                    disabled={testingMic}
+
+                    className="px-6 py-3 rounded-2xl bg-violet-600"
+
+                >
+
+                    Start Test
+
+                </button>
+
+                <button
+
+                    onClick={stopMicTest}
+
+                    disabled={!testingMic}
+
+                    className="px-6 py-3 rounded-2xl bg-white/10"
+
+                >
+
+                    Stop
+
+                </button>
+
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-black/30 p-5 min-h-[120px]">
+
+                {transcript ||
+
+                    "Transcript will appear here..."}
+
+            </div>
+
+        </div>
+
+        <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8">
+
+          <h3 className="text-xl font-semibold">
+
+              Before You Begin
+
+          </h3>
+
+          <ul className="mt-4 space-y-3 text-zinc-400">
+
+              <li>✓ Sit in a quiet environment.</li>
+
+              <li>✓ Speak naturally and clearly.</li>
+
+              <li>✓ Keep your microphone close.</li>
+
+              <li>✓ Ensure a stable internet connection.</li>
+
+          </ul>
+
+      </div>
+
             {/* Bottom CTA */}
 
             <div
@@ -552,20 +780,53 @@ export default function InterviewSetup() {
                         whileTap={{
                         scale: .97,
                         }}
-                        onClick={() => navigate("/interview/resume")}
-                        className="
+                        onClick={() =>
+                          navigate(
+                              "/interview/resume",
+                              {
+                                  state: {
+
+                                      role,
+
+                                      experience,
+
+                                      difficulty,
+
+                                      micDevice
+
+                                  }
+                              }
+                          )
+                      }
+
+                      disabled={
+                          !micPermission ||
+                          !browserSupported ||
+                          !micWorking
+                      }
+                        className={`
                         h-16
                         px-12
                         rounded-3xl
                         font-semibold
                         text-lg
-                        bg-gradient-to-r
-                        from-violet-500
-                        to-cyan-500
-                        text-white
-                        shadow-[0_10px_40px_rgba(168,85,247,.35)]
                         transition
-                        "
+
+                        ${
+                        micPermission &&
+                        browserSupported &&
+                        micWorking
+
+                        ?
+
+                        "bg-gradient-to-r from-violet-500 to-cyan-500"
+
+                        :
+
+                        "bg-zinc-700 cursor-not-allowed opacity-50"
+
+                        }
+                        `}
                     >
                         Start Interview
                     </motion.button>
