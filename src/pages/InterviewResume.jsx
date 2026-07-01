@@ -257,7 +257,7 @@ export default function InterviewResume() {
                 </p>
 
                 <h2 className="text-3xl font-bold mt-3">
-                  {currentQuestion.question}
+                  Tell me about yourself and your background
                 </h2>
 
               </div>
