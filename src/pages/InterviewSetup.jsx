@@ -5,6 +5,7 @@ import { startInterview } from "../services/interview";
 import { useAuth } from "../context/AuthContext";
 import { db } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { useInterview } from "../context/InterviewContext";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
 
@@ -49,6 +50,16 @@ export default function InterviewSetup() {
   const [startingInterview,setStartingInterview]=useState(false);
 
   const [resumeSummary, setResumeSummary] = useState("");
+
+  const {
+
+    setSession,
+
+    setCurrentStage,
+
+    setCurrentQuestion
+
+  } = useInterview();
 
   useEffect(() => {
 
@@ -127,21 +138,23 @@ export default function InterviewSetup() {
 
         const session = await startInterview({
 
-            role,
+          role,
 
-            experience,
+          experience,
 
-            difficulty,
+          difficulty,
 
-            resumeSummary: resumeSummary ? resumeSummary : "",
+          resumeSummary
 
-        });
+      });
 
-        navigate("/interview/resume", {
-            state: {
-                session
-            }
-        });
+      setSession(session);
+
+      setCurrentStage("resume");
+
+      setCurrentQuestion(0);
+
+      navigate("/interview/resume");
 
     } catch (error) {
 
