@@ -1,241 +1,172 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import DashboardNavbar from "../components/dashboard/Navbar";
 
+import InterviewHeader from "../components/interview/InterviewHeader";
+import InterviewProgress from "../components/interview/ProgressBar";
+import QuestionNavigator from "../components/interview/QuestionNavigator";
+import QuestionCard from "../components/interview/QuestionCard";
+import RecordingPanel from "../components/interview/RecordingPanel";
+import TranscriptBox from "../components/interview/TranscriptBox";
+import InterviewControls from "../components/interview/InterviewControls";
+import SummaryModal from "../components/interview/SummaryModal";
+
+import useRecorder from "../hooks/useRecorder";
 
 export default function InterviewHR() {
+
   const navigate = useNavigate();
+  const recorder = useRecorder();
+
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState(0);
+
+  const questions = [
+    {
+      id: 1,
+      question: "Tell me about a time you worked in a team and handled a conflict.",
+      time: "2-3 min",
+    },
+    {
+      id: 2,
+      question: "What are your biggest strengths and weaknesses?",
+      time: "2-3 min",
+    },
+    {
+      id: 3,
+      question: "Describe a situation where you had to learn something quickly.",
+      time: "3 min",
+    },
+    {
+      id: 4,
+      question: "Why do you want to join our company?",
+      time: "2 min",
+    },
+    {
+      id: 5,
+      question: "Do you have any questions for the interviewer?",
+      time: "2 min",
+    },
+  ];
+
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+
+  const stageProgress = 80;
+  const questionProgress =
+    ((currentQuestion + 1) / questions.length) * 20;
+
+  const progress = Math.round(stageProgress + questionProgress);
+
+  const handleBack = () => {
+    navigate("/interview/technical");
+  };
+
+  const handleNext = () => {
+
+    if (!recorder.audioBlob) return;
+
+    if (recorder.isRecording) {
+      recorder.stopRecording();
+    }
+
+    setShowAnalysis(true);
+    setAnalysisStep(0);
+
+    setTimeout(() => setAnalysisStep(1), 700);
+    setTimeout(() => setAnalysisStep(2), 1500);
+    setTimeout(() => setAnalysisStep(3), 2300);
+
+    setTimeout(() => {
+
+      setShowAnalysis(false);
+
+      if (currentQuestion < questions.length - 1) {
+
+        recorder.resetRecorder();
+
+        setCurrentQuestion(prev => prev + 1);
+
+      } else {
+
+        recorder.resetRecorder();
+
+        navigate("/interview/summary");
+
+      }
+
+    }, 3200);
+
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden"> 
+
+    <div className="min-h-screen bg-black text-white">
 
       <DashboardNavbar />
 
-      <main className="max-w-5xl mx-auto px-6 pt-36 pb-20">
+      <SummaryModal
+        open={showAnalysis}
+        currentStep={analysisStep}
+      />
 
-        {/* Header */}
+      <main className="mx-auto max-w-6xl px-6 pt-36 pb-20">
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: .5 }}
-        >
+        <InterviewHeader
+          stage={3}
+          title="HR & Behavioral Interview"
+          description="This final round evaluates your communication, teamwork, leadership, adaptability and cultural fit. Answer honestly and confidently."
+        />
 
-          <div className="flex items-center justify-between">
+        <InterviewProgress
+          progress={progress}
+          stage={3}
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={questions.length}
+        />
 
-            <div>
+        <QuestionNavigator
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={questions.length}
+        />
 
-              <p className="text-violet-400 font-medium">
-                Stage 3 of 3
-              </p>
+        <QuestionCard
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={questions.length}
+          question={questions[currentQuestion].question}
+          estimatedTime={questions[currentQuestion].time}
+        />
 
-              <h1 className="text-5xl font-bold mt-3">
-                Behavioral + HR
-              </h1>
+        <RecordingPanel
+          isRecording={recorder.isRecording}
+          timer={recorder.timer}
+          formatTime={recorder.formatTime}
+          startRecording={recorder.startRecording}
+          stopRecording={recorder.stopRecording}
+        />
 
-              <p className="text-zinc-400 mt-4 max-w-xl">
-                This round evaluates your communication,
-                teamwork, leadership and problem-solving
-                abilities through real-world scenarios.
-              </p>
+        <TranscriptBox
+          transcript={recorder.transcript}
+          audioURL={recorder.audioURL}
+        />
 
-            </div>
-
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="
-                rounded-2xl
-                border
-                border-white/10
-                bg-white/5
-                px-5
-                py-3
-                hover:bg-white/10
-              "
-            >
-              Exit Interview
-            </button>
-
-          </div>
-
-        </motion.div>
-
-        {/* Progress */}
-
-        <div className="mt-12">
-
-          <div className="flex justify-between text-sm text-zinc-500 mb-3">
-
-            <span>Interview Progress</span>
-
-            <span>100%</span>
-
-          </div>
-
-          <div className="h-3 rounded-full bg-white/5 overflow-hidden">
-
-            <div
-              className="
-                h-full
-                rounded-full
-                bg-gradient-to-r
-                from-violet-500
-                to-cyan-400
-                w-full
-              "
-            />
-
-          </div>
-
-        </div>
-
-        {/* Question Card */}
-
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: .2 }}
-          className="
-            mt-12
-            rounded-[32px]
-            border
-            border-white/10
-            bg-white/[0.03]
-            backdrop-blur-xl
-            p-10
-            relative
-            overflow-hidden
-          "
-        >
-
-          <div
-            className="
-              absolute
-              -top-32
-              -right-32
-              w-72
-              h-72
-              rounded-full
-              bg-violet-500/10
-              blur-[120px]
-            "
-          />
-
-          <div className="relative z-10">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-
-                <div className="flex gap-3">
-
-                  <span className="rounded-full bg-violet-500/10 px-3 py-1 text-sm text-violet-300">
-                    Leadership
-                  </span>
-
-                  <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-sm text-cyan-300">
-                    Behavioral
-                  </span>
-
-                </div>
-
-                <p className="text-zinc-500 mt-5">
-                  Question 3 of 3
-                </p>
-
-                <h2 className="text-3xl font-bold mt-3">
-                  Tell me about a time you handled
-                  a conflict within your team.
-                </h2>
-
-              </div>
-
-              <div
-                className="
-                  h-14
-                  w-14
-                  rounded-2xl
-                  bg-violet-500/20
-                  flex
-                  items-center
-                  justify-center
-                  text-2xl
-                "
-              >
-                💬
-              </div>
-
-            </div>
-
-            {/* Answer */}
-
-            <div className="mt-10">
-
-              <h4 className="font-semibold text-lg">
-                Your Answer
-              </h4>
-
-              <textarea
-                rows={8}
-                placeholder="Share your experience..."
-                className="
-                  mt-4
-                  w-full
-                  rounded-2xl
-                  border
-                  border-white/10
-                  bg-black/30
-                  p-5
-                  outline-none
-                  resize-none
-                "
-              />
-
-            </div>
-
-            {/* Navigation */}
-
-            <div className="flex justify-between mt-10">
-
-              <button
-                onClick={() => navigate("/interview/technical")}
-                className="
-                  px-6
-                  py-3
-                  rounded-2xl
-                  bg-white/5
-                  border
-                  border-white/10
-                  hover:bg-white/10
-                  transition
-                "
-              >
-                Technical Round
-              </button>
-
-              <button
-                onClick={() => navigate("/interview/results")}
-                className="
-                  px-8
-                  py-3
-                  rounded-2xl
-                  bg-white
-                  text-black
-                  font-medium
-                "
-              >
-                View Results
-              </button>
-
-            </div>
-
-          </div>
-
-        </motion.div>
+        <InterviewControls
+          onBack={handleBack}
+          onNext={handleNext}
+          nextLabel={
+            currentQuestion === questions.length - 1
+              ? "Finish Interview"
+              : "Next Question"
+          }
+          disableNext={!recorder.audioBlob}
+          isLastQuestion={
+            currentQuestion === questions.length - 1
+          }
+        />
 
       </main>
 
     </div>
+
   );
+
 }
