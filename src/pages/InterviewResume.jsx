@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
 import SplashCursor from "../components/SplashCursor";
@@ -7,6 +8,114 @@ import SplashCursor from "../components/SplashCursor";
 
 export default function InterviewResume() {
   const navigate = useNavigate();
+  const [isRecording, setIsRecording] = useState(false);
+
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+
+  const [audioBlob, setAudioBlob] = useState(null);
+
+  const [audioURL, setAudioURL] = useState("");
+
+  const [timer, setTimer] = useState(0);
+
+  const chunksRef = useRef([]);
+
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+
+    if (!isRecording) return;
+
+    timerRef.current = setInterval(() => {
+
+        setTimer(prev => prev + 1);
+
+    },1000);
+
+    return ()=>clearInterval(timerRef.current);
+
+  },[isRecording]);
+
+  const formatTime = (seconds)=>{
+
+    const mins=Math.floor(seconds/60);
+
+    const secs=seconds%60;
+
+    return `${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
+
+  }
+
+  const startRecording = async()=>{
+
+    const stream=
+
+    await navigator.mediaDevices.getUserMedia({
+
+        audio:true
+
+    });
+
+    const recorder=
+
+    new MediaRecorder(stream);
+
+    chunksRef.current=[];
+
+    recorder.ondataavailable=(e)=>{
+
+        chunksRef.current.push(e.data);
+
+    };
+
+    recorder.onstop=()=>{
+
+        const blob=new Blob(
+
+            chunksRef.current,
+
+            {
+
+                type:"audio/webm"
+
+            }
+
+        );
+
+        console.log(blob);
+        console.log(blob.size);
+
+        setAudioBlob(blob);
+
+        setAudioURL(
+            URL.createObjectURL(blob)
+        );
+
+        stream.getTracks().forEach(track=>track.stop());
+
+    };
+
+    recorder.start();
+
+    setMediaRecorder(recorder);
+
+    setTimer(0);
+
+    setIsRecording(true);
+
+  };
+
+  const stopRecording=()=>{
+
+    if(mediaRecorder){
+      mediaRecorder.stop();
+    }
+
+    clearInterval(timerRef.current);
+
+    setIsRecording(false);
+
+  };
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -148,7 +257,7 @@ export default function InterviewResume() {
                 </p>
 
                 <h2 className="text-3xl font-bold mt-3">
-                  Tell me about yourself.
+                  {currentQuestion.question}
                 </h2>
 
               </div>
@@ -192,8 +301,19 @@ export default function InterviewResume() {
       </p>
 
       <h3 className="mt-2 text-xl font-semibold">
-        Listening for your response...
+        {isRecording ? "Listening..." : "Ready to Record"}
       </h3>
+      {
+      isRecording && (
+
+      <p className="mt-2 text-red-400 text-sm">
+
+      ● Recording
+
+      </p>
+
+      )
+      }
 
     </div>
 
@@ -206,18 +326,23 @@ export default function InterviewResume() {
     >
 
       <span className="text-zinc-500">
-        00:00
+        {formatTime(timer)}
       </span>
 
+      {
+      isRecording && (
+
       <div
-        className="
-          h-3
-          w-3
-          rounded-full
-          bg-red-500
-          animate-pulse
-        "
-      />
+      className="
+      h-3
+      w-3
+      rounded-full
+      bg-red-500
+      animate-pulse
+      "/>
+
+      )
+      }
 
     </div>
 
@@ -228,18 +353,26 @@ export default function InterviewResume() {
   <div className="flex justify-center mt-10">
 
     <div
+      onClick={
+          isRecording
+              ? stopRecording
+              : startRecording
+      }
       className="
-        relative
-        h-28
-        w-28
-        rounded-full
-        bg-gradient-to-br
-        from-violet-500
-        to-cyan-500
-        flex
-        items-center
-        justify-center
-        shadow-[0_0_60px_rgba(168,85,247,.35)]
+          relative
+          h-28
+          w-28
+          rounded-full
+          bg-gradient-to-br
+          from-violet-500
+          to-cyan-500
+          flex
+          items-center
+          justify-center
+          shadow-[0_0_60px_rgba(168,85,247,.35)]
+          cursor-pointer
+          transition
+          hover:scale-105
       "
     >
 
@@ -248,14 +381,14 @@ export default function InterviewResume() {
       </span>
 
       <div
-        className="
-          absolute
-          inset-0
-          rounded-full
-          border
-          border-violet-400/30
-          animate-ping
-        "
+        className={`
+            absolute
+            inset-0
+            rounded-full
+            border
+            border-violet-400/30
+            ${isRecording ? "animate-ping" : ""}
+        `}
       />
 
     </div>
@@ -263,7 +396,11 @@ export default function InterviewResume() {
   </div>
 
   <p className="text-center text-zinc-500 mt-5">
-    Press Start Recording to answer naturally.
+    {
+    isRecording
+        ? "Recording... Tap the microphone to stop."
+        : "Tap the microphone to start recording."
+   }
   </p>
 
   {/* Transcript */}
@@ -293,6 +430,18 @@ export default function InterviewResume() {
 
     </div>
 
+    {
+    audioURL && (
+
+    <audio
+    controls
+    src={audioURL}
+    className="mt-6 w-full"
+    />
+
+    )
+    }
+
   </div>
 
 </div>
@@ -316,15 +465,30 @@ export default function InterviewResume() {
                 </button>
 
               <button
-                onClick={() => navigate("/interview/technical")}
-                className="
-                    px-8
-                    py-3
-                    rounded-2xl
-                    bg-white
-                    text-black
-                    font-medium
-                "
+                disabled={!audioBlob}
+                onClick={() => {console.log(audioBlob);}}
+                className={`
+
+                  px-8
+                  py-3
+                  rounded-2xl
+                  font-medium
+                  transition
+
+                  ${
+                  audioBlob
+
+                  ?
+
+                  "bg-white text-black"
+
+                  :
+
+                  "bg-zinc-700 text-zinc-400 cursor-not-allowed"
+
+                  }
+
+                `}
                 >
                 Continue to Technical
                 </button>
