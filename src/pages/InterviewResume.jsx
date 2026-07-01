@@ -1,516 +1,182 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import SpeechRecognition, {
-    useSpeechRecognition
-} from "react-speech-recognition";
-
+import SplashCursor from "../components/SplashCursor";
 import DashboardNavbar from "../components/dashboard/Navbar";
 
+import InterviewHeader from "../components/interview/InterviewHeader";
+import InterviewProgress from "../components/interview/InterviewProgress";
+import QuestionNavigator from "../components/interview/QuestionNavigator";
+import QuestionCard from "../components/interview/QuestionCard";
+import RecordingPanel from "../components/interview/RecordingPanel";
+import TranscriptBox from "../components/interview/TranscriptBox";
+import InterviewControls from "../components/interview/InterviewControls";
+import SummaryModal from "../components/interview/SummaryModal";
+
+import useRecorder from "../hooks/useRecorder";
 
 export default function InterviewResume() {
+
   const navigate = useNavigate();
-  const [isRecording, setIsRecording] = useState(false);
 
-  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const recorder = useRecorder();
 
-  const [audioBlob, setAudioBlob] = useState(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState(0);
 
-  const [audioURL, setAudioURL] = useState("");
+  const questions = [
+    {
+      id: 1,
+      question: "Tell me about yourself.",
+      time: "2-3 min",
+    },
+    {
+      id: 2,
+      question: "Walk me through your resume.",
+      time: "2-3 min",
+    },
+    {
+      id: 3,
+      question: "Which project are you most proud of and why?",
+      time: "3-4 min",
+    },
+    {
+      id: 4,
+      question: "What challenges did you face while building your projects?",
+      time: "3 min",
+    },
+    {
+      id: 5,
+      question: "What are your future career goals?",
+      time: "2 min",
+    },
+  ];
 
-  const [timer, setTimer] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
 
-  const chunksRef = useRef([]);
+  const progress = Math.round(
+    ((currentQuestion + 1) / questions.length) * 100
+  );
 
-  const timerRef = useRef(null);
+  const handleBack = () => {
 
-  const {
-
-    transcript,
-
-    resetTranscript,
-
-    browserSupportsSpeechRecognition
-  
-  } = useSpeechRecognition();
-
-  useEffect(() => {
-
-    if (!isRecording) return;
-
-    timerRef.current = setInterval(() => {
-
-        setTimer(prev => prev + 1);
-
-    },1000);
-
-    return ()=>clearInterval(timerRef.current);
-
-  },[isRecording]);
-
-  const formatTime = (seconds)=>{
-
-    const mins=Math.floor(seconds/60);
-
-    const secs=seconds%60;
-
-    return `${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
-
-  }
-
-  const startRecording = async()=>{
-
-    const stream=
-
-    await navigator.mediaDevices.getUserMedia({
-
-        audio:true
-
-    });
-
-    const recorder=
-
-    new MediaRecorder(stream);
-
-    chunksRef.current=[];
-
-    recorder.ondataavailable=(e)=>{
-
-        chunksRef.current.push(e.data);
-
-    };
-
-    recorder.onstop=()=>{
-
-        const blob=new Blob(
-
-            chunksRef.current,
-
-            {
-
-                type:"audio/webm"
-
-            }
-
-        );
-
-        console.log(blob);
-        console.log(blob.size);
-
-        setAudioBlob(blob);
-
-        setAudioURL(
-            URL.createObjectURL(blob)
-        );
-
-        stream.getTracks().forEach(track=>track.stop());
-
-    };
-
-    resetTranscript();
-
-      SpeechRecognition.startListening({
-
-      continuous: true,
-
-      language: "en-IN"
-
-    });
-
-    recorder.start();
-
-    setMediaRecorder(recorder);
-
-    setTimer(0);
-
-    setIsRecording(true);
+    navigate("/interview/setup");
 
   };
 
-  const stopRecording=()=>{
+  const handleNext = async () => {
 
-    if(mediaRecorder){
-      mediaRecorder.stop();
-    }
-    SpeechRecognition.stopListening();
+    if (!recorder.audioBlob) return;
 
-    clearInterval(timerRef.current);
+    setShowAnalysis(true);
 
-    setIsRecording(false);
+    setAnalysisStep(0);
+
+    setTimeout(() => setAnalysisStep(1), 800);
+
+    setTimeout(() => setAnalysisStep(2), 1700);
+
+    setTimeout(() => setAnalysisStep(3), 2600);
+
+    setTimeout(() => {
+
+      setShowAnalysis(false);
+
+      if (currentQuestion < questions.length - 1) {
+
+        setCurrentQuestion((prev) => prev + 1);
+
+      } else {
+
+        navigate("/interview/technical");
+
+      }
+
+    }, 3600);
 
   };
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+
+    <div className="min-h-screen overflow-x-hidden bg-black text-white">
+
+      <SplashCursor
+        DENSITY_DISSIPATION={4}
+        VELOCITY_DISSIPATION={2.2}
+        PRESSURE={0.08}
+        CURL={2}
+        SPLAT_RADIUS={0.12}
+        SPLAT_FORCE={3500}
+        COLOR_UPDATE_SPEED={8}
+        SHADING
+        RAINBOW_MODE
+        COLOR="#8B5CF6"
+      />
 
       <DashboardNavbar />
 
-      <main className="max-w-5xl mx-auto px-6 pt-36 pb-20">
-
-        {/* Header */}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: .5 }}
-        >
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-violet-400 font-medium">
-                Stage 1 of 3
-              </p>
-
-              <h1 className="text-5xl font-bold mt-3">
-                Resume Discussion
-              </h1>
-
-              <p className="text-zinc-400 mt-4 max-w-xl">
-                Let's begin by understanding your
-                background, projects and experience.
-                Answer naturally as if you're talking
-                to a real interviewer.
-              </p>
-
-            </div>
-
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="
-                rounded-2xl
-                border
-                border-white/10
-                bg-white/5
-                px-5
-                py-3
-                hover:bg-white/10
-              "
-            >
-              Exit Interview
-            </button>
-
-          </div>
-
-        </motion.div>
-
-        {/* Progress */}
-
-<div className="mt-12">
-
-  <div className="flex justify-between text-sm text-zinc-500 mb-3">
-
-    <span>Interview Progress</span>
-
-    <span>20%</span>
-
-  </div>
-
-  <div className="h-3 rounded-full bg-white/5 overflow-hidden">
-
-    <div
-      className="
-        h-full
-        rounded-full
-        bg-gradient-to-r
-        from-violet-500
-        to-cyan-400
-        w-[20%]
-      "
-    />
-
-  </div>
-
-</div>
-
-        {/* Question Card */}
-
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: .2 }}
-          className="
-            mt-12
-            rounded-[32px]
-            border
-            border-white/10
-            bg-white/[0.03]
-            backdrop-blur-xl
-            p-10
-            relative
-            overflow-hidden
-          "
-        >
-
-          <div
-            className="
-              absolute
-              -top-32
-              -right-32
-              w-72
-              h-72
-              rounded-full
-              bg-violet-500/10
-              blur-[120px]
-            "
-          />
-
-          <div className="relative z-10">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-
-                <p className="text-zinc-500">
-                  Question 1 of 5
-                </p>
-
-                <h2 className="text-3xl font-bold mt-3">
-                  Tell me about yourself and your background
-                </h2>
-
-              </div>
-
-              <div
-                className="
-                  h-14
-                  w-14
-                  rounded-2xl
-                  bg-violet-500/20
-                  flex
-                  items-center
-                  justify-center
-                  text-2xl
-                "
-              >
-                🎤
-              </div>
-
-            </div>
-
-            <div
-                className="
-                    mt-10
-                    rounded-[28px]
-                    border
-                    border-white/10
-                    bg-white/[0.03]
-                    p-8
-                "
-                >
-
-  {/* AI Status */}
-
-  <div className="flex items-center justify-between">
-
-    <div>
-
-      <p className="text-zinc-500 text-sm">
-        AI Interviewer
-      </p>
-
-      <h3 className="mt-2 text-xl font-semibold">
-        {isRecording ? "Listening..." : "Ready to Record"}
-      </h3>
-      {
-      isRecording && (
-
-      <p className="mt-2 text-red-400 text-sm">
-
-      ● Recording
-
-      </p>
-
-      )
-      }
-
-    </div>
-
-    <div
-      className="
-        flex
-        items-center
-        gap-3
-      "
-    >
-
-      <span className="text-zinc-500">
-        {formatTime(timer)}
-      </span>
-
-      {
-      isRecording && (
-
-      <div
-      className="
-      h-3
-      w-3
-      rounded-full
-      bg-red-500
-      animate-pulse
-      "/>
-
-      )
-      }
-
-    </div>
-
-  </div>
-
-  {/* Microphone */}
-
-  <div className="flex justify-center mt-10">
-
-    <div
-      onClick={
-          isRecording
-              ? stopRecording
-              : startRecording
-      }
-      className="
-          relative
-          h-28
-          w-28
-          rounded-full
-          bg-gradient-to-br
-          from-violet-500
-          to-cyan-500
-          flex
-          items-center
-          justify-center
-          shadow-[0_0_60px_rgba(168,85,247,.35)]
-          cursor-pointer
-          transition
-          hover:scale-105
-      "
-    >
-
-      <span className="text-5xl">
-        🎤
-      </span>
-
-      <div
-        className={`
-            absolute
-            inset-0
-            rounded-full
-            border
-            border-violet-400/30
-            ${isRecording ? "animate-ping" : ""}
-        `}
+      <SummaryModal
+        open={showAnalysis}
+        currentStep={analysisStep}
       />
 
-    </div>
+      <main className="mx-auto max-w-6xl px-6 pt-36 pb-20">
 
-  </div>
+        <InterviewHeader
+          stage={1}
+          title="Resume Discussion"
+          description="Let's begin by understanding your background, projects and experience. Answer naturally as if you're talking to a real interviewer."
+        />
 
-  <p className="text-center text-zinc-500 mt-5">
-    {
-    isRecording
-        ? "Recording... Tap the microphone to stop."
-        : "Tap the microphone to start recording."
-   }
-  </p>
+        <InterviewProgress
+          progress={progress}
+          stage={1}
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={questions.length}
+        />
 
-  {/* Transcript */}
+        <QuestionNavigator
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={questions.length}
+        />
 
-  <div className="mt-10">
+        <QuestionCard
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={questions.length}
+          question={questions[currentQuestion].question}
+          estimatedTime={questions[currentQuestion].time}
+        />
 
-    <h4 className="font-semibold text-lg">
-      Live Transcript
-    </h4>
+        <RecordingPanel
+          isRecording={recorder.isRecording}
+          timer={recorder.timer}
+          formatTime={recorder.formatTime}
+          startRecording={recorder.startRecording}
+          stopRecording={recorder.stopRecording}
+        />
 
-    <div
-      className="
-        mt-4
-        rounded-2xl
-        border
-        border-dashed
-        border-white/10
-        bg-black/30
-        p-6
-        min-h-[120px]
-      "
-    >
+        <TranscriptBox
+          transcript={recorder.transcript}
+          audioURL={recorder.audioURL}
+        />
 
-      <p className="leading-8">
-      {transcript || "Your spoken answer will appear here..."}
-      </p>
-
-    </div>
-
-    {
-    audioURL && (
-
-    <audio
-    controls
-    src={audioURL}
-    className="mt-6 w-full"
-    />
-
-    )
-    }
-
-  </div>
-
-</div>
-
-            <div className="flex justify-between mt-10">
-
-              <button
-                onClick={() => navigate("/interview/setup")}
-                className="
-                    px-6
-                    py-3
-                    rounded-2xl
-                    bg-white/5
-                    border
-                    border-white/10
-                    hover:bg-white/10
-                    transition
-                "
-                >
-                Back
-                </button>
-
-              <button
-                disabled={!audioBlob}
-                onClick={() => {console.log(audioBlob);}}
-                className={`
-
-                  px-8
-                  py-3
-                  rounded-2xl
-                  font-medium
-                  transition
-
-                  ${
-                  audioBlob
-
-                  ?
-
-                  "bg-white text-black"
-
-                  :
-
-                  "bg-zinc-700 text-zinc-400 cursor-not-allowed"
-
-                  }
-
-                `}
-                >
-                Continue to Technical
-                </button>
-
-            </div>
-
-          </div>
-
-        </motion.div>
+        <InterviewControls
+          onBack={handleBack}
+          onNext={handleNext}
+          nextLabel={
+            currentQuestion === questions.length - 1
+              ? "Continue to Technical"
+              : "Next Question"
+          }
+          disableNext={!recorder.audioBlob}
+          isLastQuestion={
+            currentQuestion === questions.length - 1
+          }
+        />
 
       </main>
 
     </div>
+
   );
+
 }
