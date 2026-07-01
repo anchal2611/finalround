@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { startInterview } from "../services/interview";
 import { useAuth } from "../context/AuthContext";
-import { db } from "../firebase";
+import { db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
