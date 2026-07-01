@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import SpeechRecognition, {
+    useSpeechRecognition
+} from "react-speech-recognition";
 
 import DashboardNavbar from "../components/dashboard/Navbar";
 import SplashCursor from "../components/SplashCursor";
@@ -21,6 +24,16 @@ export default function InterviewResume() {
   const chunksRef = useRef([]);
 
   const timerRef = useRef(null);
+
+  const {
+
+    transcript,
+
+    resetTranscript,
+
+    browserSupportsSpeechRecognition
+  
+  } = useSpeechRecognition();
 
   useEffect(() => {
 
@@ -95,6 +108,16 @@ export default function InterviewResume() {
 
     };
 
+    resetTranscript();
+
+      SpeechRecognition.startListening({
+
+      continuous: true,
+
+      language: "en-IN"
+
+    });
+
     recorder.start();
 
     setMediaRecorder(recorder);
@@ -110,6 +133,7 @@ export default function InterviewResume() {
     if(mediaRecorder){
       mediaRecorder.stop();
     }
+    SpeechRecognition.stopListening();
 
     clearInterval(timerRef.current);
 
@@ -424,8 +448,8 @@ export default function InterviewResume() {
       "
     >
 
-      <p className="text-zinc-500 leading-8">
-        Your spoken answer will appear here in real-time...
+      <p className="leading-8">
+      {transcript || "Your spoken answer will appear here..."}
       </p>
 
     </div>
