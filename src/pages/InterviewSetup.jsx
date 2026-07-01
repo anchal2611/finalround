@@ -11,7 +11,6 @@ import DashboardNavbar from "../components/dashboard/Navbar";
 
 import {
   FaBriefcase,
-  FaUserGraduate,
   FaChartLine,
 } from "react-icons/fa";
 
@@ -31,10 +30,6 @@ export default function InterviewSetup() {
   const [difficulty, setDifficulty] =
     useState("Medium");
 
-  useEffect(() => {
-    checkMicrophone();
-  }, []);
-
   const [micPermission, setMicPermission] = useState(false);
 
   const [browserSupported, setBrowserSupported] = useState(false);
@@ -45,7 +40,7 @@ export default function InterviewSetup() {
 
   const [micWorking, setMicWorking] = useState(false);
 
-  const [permissionError, setPermissionError] = useState("");
+  const [, setPermissionError] = useState("");
 
   const [startingInterview,setStartingInterview]=useState(false);
 
@@ -53,11 +48,7 @@ export default function InterviewSetup() {
 
   const {
 
-    setSession,
-
-    setCurrentStage,
-
-    setCurrentQuestion
+    startInterviewSession
 
   } = useInterview();
 
@@ -109,8 +100,6 @@ export default function InterviewSetup() {
 
     transcript,
 
-    listening,
-
     resetTranscript,
 
     browserSupportsSpeechRecognition
@@ -118,9 +107,13 @@ export default function InterviewSetup() {
 
     useEffect(() => {
 
-        setBrowserSupported(
-            browserSupportsSpeechRecognition
-        );
+        const timer = window.setTimeout(() => {
+            setBrowserSupported(
+                browserSupportsSpeechRecognition
+            );
+        }, 0);
+
+        return () => window.clearTimeout(timer);
 
     }, [browserSupportsSpeechRecognition]);
 
@@ -148,11 +141,7 @@ export default function InterviewSetup() {
 
       });
 
-      setSession(session);
-
-      setCurrentStage("resume");
-
-      setCurrentQuestion(0);
+      startInterviewSession(session);
 
       navigate("/interview/resume");
 
@@ -172,7 +161,7 @@ export default function InterviewSetup() {
     }
   };
 
-  const checkMicrophone = async () => {
+  async function checkMicrophone() {
 
     try {
 
@@ -207,7 +196,15 @@ export default function InterviewSetup() {
         );
 
     }
-  };
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      checkMicrophone();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const startMicTest = () => {
 

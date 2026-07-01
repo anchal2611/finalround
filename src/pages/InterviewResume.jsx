@@ -35,7 +35,7 @@ export default function InterviewResume() {
 
         currentStage,
 
-        setCurrentStage,
+        transitionStage,
 
         responses,
 
@@ -145,14 +145,10 @@ export default function InterviewResume() {
 
                 ) {
 
-                    setCurrentStage(
-                        "technical"
-                    );
-
-                    setCurrentQuestion(0);
-
-                    navigate(
-                        "/interview/technical"
+                    transitionStage(
+                        "technical",
+                        "/interview/technical",
+                        navigate
                     );
 
                 }

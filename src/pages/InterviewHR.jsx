@@ -35,7 +35,7 @@ export default function InterviewHR() {
 
         currentStage,
 
-        setCurrentStage,
+        transitionStage,
 
         responses,
 
@@ -145,14 +145,10 @@ export default function InterviewHR() {
 
                 ) {
 
-                    setCurrentStage(
-                        "completed"
-                    );
-
-                    setCurrentQuestion(0);
-
-                    navigate(
-                        "/interview/results"
+                    transitionStage(
+                        "completed",
+                        "/interview/results",
+                        navigate
                     );
 
                 }

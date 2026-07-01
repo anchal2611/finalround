@@ -2,7 +2,7 @@ import DashboardNavbar from "../components/dashboard/Navbar";
 import WelcomeCard from "../components/dashboard/WelcomeCard";
 import StatsGrid from "../components/dashboard/StatsGrid";
 import StartInterview from "../components/dashboard/StartInterview";
-import ResumeCard from "../components/dashboard/ResumeCard";
+import ResumeSummaryCard from "../components/dashboard/ResumeSummaryCard";
 import InsightsCard from "../components/dashboard/InsightsCard";
 import RecentSessions from "../components/dashboard/RecentSessions";
 
@@ -53,7 +53,7 @@ export default function Dashboard() {
 
         {/* Resume + AI Insights */}
         <section className="grid lg:grid-cols-2 gap-8 mt-10">
-          <ResumeCard />
+          <ResumeSummaryCard />
           <InsightsCard />
         </section>
 

@@ -6,7 +6,7 @@ import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import Dashboard from "../pages/Dashboard";
-import ResumeViewer from "../pages/ResumeViewer";
+import ResumeAnalytics from "../pages/ResumeAnalytics";
 
 import InterviewSetup from "../pages/InterviewSetup";
 import InterviewResume from "../pages/InterviewResume";
@@ -45,7 +45,7 @@ export default function AppRoutes() {
           path="/dashboard/resume"
           element={
             <ProtectedRoute>
-              <ResumeViewer />
+              <ResumeAnalytics />
             </ProtectedRoute>
           }
         />

@@ -190,7 +190,7 @@ export default function DashboardNavbar() {
               <button
                 key={item.name}
                 onClick={() => {
-                  setActive(item.name);
+                  navigate(item.path);
                   setMenuOpen(false);
                 }}
                 className="

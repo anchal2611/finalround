@@ -33,6 +33,9 @@ Return exactly this schema:
   "missingKeywords": [
     "string"
   ],
+  "matchedKeywords": [
+    "string"
+  ],
   "criticalFixes": [
     "string"
   ],
@@ -86,6 +89,8 @@ Requirements:
 - Give 5-8 improvements.
 
 - Give 5-10 missing keywords.
+
+- Give 5-10 matched keywords found in the resume.
 
 - Give top 5 critical fixes.
 

@@ -3,6 +3,7 @@ import {
     useContext,
     useState
 } from "react";
+import { flushSync } from "react-dom";
 
 const InterviewContext = createContext();
 
@@ -100,6 +101,46 @@ export function InterviewProvider({ children }) {
 
     };
 
+    const startInterviewSession = (newSession) => {
+
+        flushSync(() => {
+
+            setSession(newSession);
+
+            setCurrentStage("resume");
+
+            setCurrentQuestion(0);
+
+            setResponses([]);
+
+            setOverallResult(null);
+
+        });
+
+    };
+
+    const transitionStage = (
+
+        nextStage,
+
+        nextPath,
+
+        navigate
+
+    ) => {
+
+        flushSync(() => {
+
+            setCurrentStage(nextStage);
+
+            setCurrentQuestion(0);
+
+        });
+
+        navigate(nextPath);
+
+    };
+
     const value = {
 
         session,
@@ -130,7 +171,11 @@ export function InterviewProvider({ children }) {
 
         setOverallResult,
 
-        resetInterview
+        resetInterview,
+
+        startInterviewSession,
+
+        transitionStage
 
     };
 
@@ -146,6 +191,7 @@ export function InterviewProvider({ children }) {
 
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useInterview() {
 
     const context = useContext(InterviewContext);

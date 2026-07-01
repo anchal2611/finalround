@@ -39,7 +39,7 @@ export default function ResumeCard() {
     categoryScores: [],
   });
 
-  const [status, setStatus] = useState("");
+  const [, setStatus] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -96,14 +96,6 @@ export default function ResumeCard() {
             resumeKey:
               data.resumeKey || "",
 
-            missingKeywords:
-              data.missingKeywords,
-
-            criticalFixes:
-              data.criticalFixes,
-
-            categoryScores:
-              data.categoryScores,
           });
         }
       } catch (error) {
