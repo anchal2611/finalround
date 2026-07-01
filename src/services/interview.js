@@ -69,7 +69,9 @@ export async function evaluateAnswer({
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
+    
+    console.log(text);
 
     if (!response.ok) {
       throw new Error(
